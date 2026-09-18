@@ -4,13 +4,13 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**M0-1 — Socle du dépôt : terminée**, en attente de « suite » (prochaine étape : M0-2 CI et déploiement).
+**M0-2 — CI et déploiement : terminée** (mode boucle demandé par Marc). Prochaine étape : M1-3 (parseur syntaxique, sans réseau), car M1-1 exige des entrées de Marc.
 
 ## Étapes
 
 - [x] P0 — Lecture critique · 2026-09-18 · livrée en session, sans fichier
 - [x] M0-1 — Socle du dépôt · 2026-09-18 · commits `558eaf2` → `README/PROGRESS` (voir `git log`)
-- [ ] M0-2 — CI et déploiement GitHub Pages
+- [x] M0-2 — CI et déploiement GitHub Pages · 2026-09-18 · commit `5105a3c`
 - [ ] M1-1 — Exploration de l'API DofusDB (60 requêtes max)
 - [ ] M1-2 — Client de snapshot (arrêt après `--dry-run` tant que l'accord DofusDB n'est pas reçu)
 - [ ] M1-3 — Parseur syntaxique des critères (sans réseau)
@@ -32,6 +32,13 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - Garde-fous `src/core` : règle ESLint locale `core/imports-only-core` (résout chaque import et refuse tout ce qui sort de `src/core`, paquets compris) + `no-restricted-globals` + `no-restricted-syntax` (`Date.now()`, `new Date()` sans argument, `Math.random()`). Preuve : `tests/eslint-guard.test.ts`.
 - Prettier ignore `*.md` : les documents normatifs ne sont jamais reformatés par l'outillage.
 - `.nvmrc` = 24 (version installée chez Marc, Windows). Fins de ligne forcées en LF (`.gitattributes`).
+
+## Décisions techniques prises en M0-2
+
+- Actions officielles épinglées par SHA (checkout v7, setup-node v7, configure-pages v6, upload-pages-artifact v5, deploy-pages v5). `actionlint` absent de la machine : relecture manuelle.
+- `deploy` se déclenche par `workflow_run` de `ci` réussie sur `main`, et rebuild le commit `head_sha` validé.
+- Base Vite `/dofushelper/` (variable `VITE_BASE` pour la surcharger). Preuve : `vite preview` répond 200 sur `/dofushelper/`, ses assets et `/dofushelper/data/`.
+- Réglages GitHub à faire par Marc : voir README « Déploiement ». Le premier `git push` reste à faire par Marc.
 
 ## Questions en attente (posées en P0, sans réponse)
 
