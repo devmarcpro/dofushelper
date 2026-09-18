@@ -1,6 +1,8 @@
 # DATA_SOURCES — d'où viennent les données et comment s'en servir
 
-Version 0.1 — 18 septembre 2026 · Emplacement : `docs/DATA_SOURCES.md`
+Version 0.2 — 18 septembre 2026 · Emplacement : `docs/DATA_SOURCES.md`
+
+> **Licence (M1-1, bloquant).** L'API sert l'en-tête `x-license: LPNC-IA 1.0 / NCPUL-AI 1.0` et son texte à la racine `https://api.dofusdb.fr/` : non commercial, attribution obligatoire (« Données issues de DofusDB. Utilisation soumise à la LPNC-IA 1.0. »), partage à l'identique, et **exclusion des projets produits majoritairement par IA ou des pipelines automatisés pilotés par l'IA**. Voir `DATA_NOTES.md` §0 et §13. Aucune requête tant que Marc n'a pas tranché.
 
 ## 1. Légende et règle du jeu
 
@@ -27,7 +29,7 @@ Réponse de liste ✅ :
 { "total": 1978, "limit": 50, "skip": 0, "data": [ { "id": 18, "name": { "fr": "…", "en": "…" } } ] }
 ```
 
-Taille de page : **50** observé ✅ ; demander plus renvoie vraisemblablement 50 ⚠️. Les textes sont des objets multilingues `{ fr, en, es, de, pt }` ✅.
+Taille de page : **50** observé ✅ ; `$limit=100` renvoie `limit: 50` et 50 éléments ✅ (2026-09-18) ; `$limit=0` renvoie `total` sans données ✅. Les textes sont des objets multilingues `{ fr, en, es, de, pt }` ✅.
 
 ### 2.2 Syntaxe de requête ✅
 
@@ -47,32 +49,38 @@ Taille de page : **50** observé ✅ ; demander plus renvoie vraisemblablement 5
 
 `version` · `criterion` · `quests` · `achievements` · `achievement-categories` · `achievement-objectives` · `achievement-rewards` · `items` · `item-types` · `item-super-types` · `item-sets` · `recipes` · `jobs` · `skills` · `monsters` · `monster-races` · `monster-super-races` · `dungeons` · `npcs` · `npc-messages` · `maps` · `map-positions` · `subareas` · `areas` · `super-areas` · `worlds` · `breeds` · `alignment-sides` · `alignment-ranks` · `titles` · `ornaments` · `challenges` · `servers` · `almanax-calendars` · `almanax`
 
-### 2.4 Endpoints probables ⚠️ (détail des quêtes)
+### 2.4 Endpoints de détail des quêtes ✅ (2026-09-18)
 
 Noms déduits de la liste des types de ressources que l'API sait référencer (`Quests`, `QuestSteps`, `QuestObjectives`, `QuestStepRewards`, `QuestObjectiveTypes`, `QuestCategories`) :
 `quest-steps` · `quest-objectives` · `quest-step-rewards` · `quest-objective-types` · `quest-categories`
 
-À établir en M1 : ces routes existent-elles ? `GET /quests/<id>` embarque-t-il déjà étapes, objectifs et récompenses ? Si oui, préférer la forme qui coûte le moins de requêtes.
+Les cinq routes existent ✅ (`quest-steps?questId=`, `quest-objectives?stepId=` ou `?typeId=`, `quest-step-rewards?stepId=`). **`GET /quests/<id>` et la liste `/quests` embarquent déjà `steps[]` avec `objectives[]` et `rewards[]`** ✅ : forme la moins coûteuse en requêtes (≈ 40 pages pour 1 976 quêtes), mais ≈ 35 Ko par quête. `/achievements` embarque de même `objectives[]` et `rewards[]` (avec des `null` observés sur certains succès ⚠️).
 
 ### 2.5 Champs utiles
 
-**`quests`** — ✅ `id`, `name`, `startCriterion`, `levelMin`, `levelMax`, `isDungeonQuest` · ⚠️ probables : `stepIds`, `categoryId`, `repeatType`, `isPartyQuest`, `followable`.
+**`quests`** — ✅ `id`, `name`, `slug`, `startCriterion`, `levelMin`, `levelMax`, `isDungeonQuest`, `stepIds`, `steps` (embarquées), `categoryId`, `repeatType`, `repeatLimit`, `isPartyQuest`, `isEvent`, `followable`, `startPosition[{ mapId, npcId }]`, `need` (borne haute : inclut toutes les branches des `|`) · ⚠️ `type` (sens inconnu), valeurs de `repeatType`.
 
-**`achievements`** — ✅ `id`, `categoryId`, `iconId`, `objectiveIds`, `rewardIds`, `name`, `description`, `slug`, `img`, et surtout **`need`** : `{ items: number[], quantities: number[], quests: number[], achievements: number[] }` — agrégat précalculé par DofusDB. On ne s'appuie pas dessus pour le moteur (il ne couvre que les succès), mais c'est un **oracle de test** gratuit. · ⚠️ `points`, `level`, `order`, indicateur « lié au compte ».
+**`achievements`** — ✅ `id`, `categoryId`, `iconId`, `objectiveIds`, `objectives` (embarqués), `rewardIds`, `rewards` (embarqués), `name`, `description`, `slug`, `img`, `points`, `level`, `order`, **`accountLinked`** (booléen), et **`need`** : `{ items: number[], quantities: number[], quests: number[], achievements: number[] }` — agrégat précalculé par DofusDB, **oracle de test** (les quêtes ont le même champ).
 
-**`achievement-objectives`** — ✅ `achievementId`, `order`, `criterion` (brut), `name`, `readableCriterion` (arbre lisible, même forme que l'endpoint `criterion`).
+**`achievement-objectives`** — ✅ `achievementId`, `order`, `criterion` (brut : `(Qf=1521)`, `(OA=552)`, `(EM>147,0,d)`, `HD>33001,0`), `name`, `readableCriterion` (tableau de fragments avec objets ressource embarqués).
 
-**`achievement-rewards`** — ✅ `achievementId`, `criteria`, `itemsReward[]` + `itemsQuantityReward[]` (tableaux parallèles), `titlesReward[]`, `ornamentsReward[]`, `emotesReward[]`, `spellsReward[]`, `kamasRatio`, `experienceRatio`, `kamasScaleWithPlayerLevel`, `guildPoints`.
+**`achievement-rewards`** — ✅ `achievementId`, `criterions` (chaîne, ex. `Ob!37`), `itemsReward[]` + `itemsQuantityReward[]` (tableaux parallèles), `titlesReward[]`, `ornamentsReward[]`, `emotesReward[]`, `spellsReward[]`, `alterationsReward[]`, `kamasRatio`, `experienceRatio`, `kamasScaleWithPlayerLevel`, `guildPoints`.
 
-**`items`** — ✅ `id`, `typeId`, `type`, `name`, `level`, `img`, `iconId`, `criteria`, `recipeIds[]`, `recipesThatUse[]`, `dropMonsterIds[]`, `dropSubAreaIds[]`, `resourcesBySubarea`, **`questsThatUse[]`**, **`questsThatReward[]`**, `exchangeable`, `isSaleable`.
-→ « Quelle quête donne ce Dofus ? » = `questsThatReward` de l'objet. Pas besoin d'inverser nous-mêmes les récompenses de quêtes, mais `data:report` DEVRAIT recouper les deux quand les récompenses d'étapes seront disponibles.
-→ ⚠️ identifiant du type d'objet « Dofus » : chercher dans `item-types` celui dont `name.fr` vaut « Dofus ». Idem pour le super-type des objets de quête.
+**`quest-step-rewards`** — ✅ `stepId`, `itemsReward: [[itemId, qty]]`, `itemsRewardIds[]`, `items[]`, `levelMin`/`levelMax` (−1), `kamasRatio`, `experienceRatio`, `kamasScaleWithPlayerLevel`, `jobsReward[]`, `emotesReward[]`, `spellsReward[]`, `titlesReward[]`. Pas de critère.
+
+**`quest-objectives`** — ✅ `stepId`, `typeId`, `parameters { numParams, parameter0…4, dungeonOnly }`, `text` (balises `{npc,id}`, `{item,id}`, `{monster,id}`, `{map,id}`, `{subarea,id}`), `mapId`, `dialogId`, `coords`, `need.generated { dungeons, items, quantities, itemToUse }`. Table des 18 types et position des paramètres : `DATA_NOTES.md` §4.
+
+**`items`** — ✅ `id`, `typeId`, `type` (avec `superTypeId`), `name`, `level`, `img`, `iconId`, `criterions`, `criterionsTarget`, `recipeIds[]`, `recipesThatUse[]`, `dropMonsterIds[]`, `dropSubAreaIds[]`, `resourcesBySubarea`, **`questsThatUse[]`**, **`questsThatReward[]`**, **`achievementsThatReward[]`**, `exchangeable`, `isSaleable`, `usable`, `hasRecipe`, `price`.
+→ « Qui donne ce Dofus ? » = `achievementsThatReward` dans 25 cas sur 34, `questsThatReward` dans 3 cas, aucun dans 8 cas ✅ (2026-09-18). Les Dofus de série de quêtes sont donnés par le succès qui clôt la série.
+→ ✅ type « Dofus » = `item-types` **23** (super-type 13 « Dofus / Trophée / Prysmaradite ») ; super-type des objets de quête = **14** « Objet de quête ». 34 objets de type 23 (avec doublons de nom).
 
 **`recipes`** — ✅ `resultId`, `ingredientIds[]` + `quantities[]` (parallèles), `jobId`, `resultLevel`.
 
-**`monsters`** — ✅ drops : `{ monsterId, objectId, percentDropForGrade1…5, count, criteria, hasCriteria }` · ⚠️ champ « boss », grades, zones.
+**`monsters`** — ✅ drops : `{ monsterId, objectId, percentDropForGrade1…5, count, criterions, hasCriterions, hiddenIfInvalidCriterions, specificDropCoefficient[] }` · ✅ `isBoss` (filtre `isBoss=true` : 209), `isMiniBoss`, `isQuestMonster`, `grades[{ grade, level, lifePoints }]`, `subareas[]`, `favoriteSubareaId`, `race`.
 
-**`dungeons`** — ✅ `name`, `optimalPlayerLevel`, `mapIds[]`, `entranceMapId`, `exitMapId`, `monsters[]`, `subarea`.
+**`dungeons`** — ✅ `name`, `optimalPlayerLevel`, `minLevel`, `mapIds[]`, `entranceMapId`, `exitMapId`, `monsters[]` (ids), `bosses[]`, `requiredObjects[{ id, quantity }]`, `achievements[]`, `subarea`.
+
+**Tables de référence** ✅ : `alignment-sides` = 0 Neutre, 1 Bontarien, 2 Brâkmarien, 3 Mercenaire · `breeds` : le nom est dans `shortName` (pas de `name`) · `jobs` : `id`, `name` · `recipes` : `resultId`, `ingredientIds[]`, `quantities[]`, `jobId`, `resultLevel`, `skillId`.
 
 ### 2.6 Pages du site (liens sortants) ⚠️
 
@@ -80,8 +88,8 @@ URLs observées : `https://dofusdb.fr/database/quest/903` et `https://dofusdb.fr
 
 ### 2.7 Autres routes ✅
 
-- `GET /version` → chaîne JSON, version des données de jeu. **Clé de cache du snapshot.**
-- `GET /criterion/<critère encodé URL>?lang=fr` → arbre lisible : nœuds *texte*, *ressource* `{ id, type }`, *séquence*, *opération* `{ left, operator: and|or, right }` (noms JSON exacts ⚠️). Sert à **afficher** un critère, pas à raisonner dessus : le moteur a son propre parseur (§4). Usage éventuel en M5, à la compilation uniquement, pour donner un libellé français aux critères de contexte.
+- `GET /version` → chaîne JSON (`"3.6.11.15"` le 2026-09-18) ✅. **Clé de cache du snapshot.**
+- `GET /criterion/<critère encodé URL>?lang=fr` → **tableau JSON** de fragments ✅ : chaînes, sous-tableaux, séparateurs `"&"`/`"|"`, objets ressource complets embarqués (`className` `JobData`, `ItemData`, `MonsterData`…). Lourd (10 Ko pour un critère à objet). Sert à **afficher** un critère, pas à raisonner dessus : le moteur a son propre parseur (§4). Usage éventuel en M5, à la compilation uniquement, pour donner un libellé français aux critères de contexte.
 - Images : servies sous `/img/items/`, `/img/monsters/`, `/img/achievements/`… ✅ (nommage exact des fichiers ⚠️ ; le champ `img` des objets donne l'URL). Ne pas les appeler depuis le site sans accord (SPEC §10).
 
 ## 3. Étiquette réseau (obligatoire pour `scripts/snapshot`)
@@ -94,7 +102,7 @@ DofusDB est un service bénévole. Nos scripts DOIVENT :
 4. Mettre chaque réponse en cache disque (clé : URL + version) ; un snapshot interrompu reprend où il s'était arrêté.
 5. Toujours `$select` ; ne télécharger que les objets et monstres **référencés** par les quêtes et succès (par lots `id[$in][]` de 50), jamais l'encyclopédie entière.
 6. S'identifier : en-têtes `User-Agent` et `Referer` décrivant le projet avec une adresse de contact.
-7. Budget indicatif ⚠️ : < 2 000 requêtes pour un snapshot complet. Si un besoin le fait exploser, s'arrêter et en parler à Marc.
+7. Budget indicatif : < 2 000 requêtes pour un snapshot complet ; estimation M1-1 avec objets embarqués ≈ 250–400 ✅ (voir `DATA_NOTES.md` §12). Si un besoin le fait exploser, s'arrêter et en parler à Marc.
 
 Action de Marc (SPEC §13, D5) : présenter le projet à l'équipe DofusDB et leur demander leurs limites avant la mise en ligne.
 
@@ -108,7 +116,8 @@ term   := '(' expr ')' | atom
 atom   := KEY OP VALUE
 KEY    := deux lettres, casse significative        (PL, Qf, PO, Pj ≠ PJ, Sc ≠ SC …)
 OP     := '=' | '!' | '>' | '<' | 'E'               ('E' : 2 occurrences, sens ⚠️)
-VALUE  := entier | entier ',' entier
+VALUE  := entier | entier ',' entier                (critères de lancement de quêtes)
+         | token (',' token)*                       (⚠️ objectifs de succès : jusqu'à 3 tokens, dont des identifiants : « EM>147,0,d »)
 ```
 
 Constats sur les 1 978 critères de lancement de quêtes observés ✅ : aucun critère vide (le « toujours vrai » s'écrit `BT=1`) ; **aucun** ne mélange `&` et `|` au même niveau de parenthèses. Le parseur applique la précédence usuelle (`&` avant `|`) et `data:report` DOIT signaler tout critère qui mélangerait les deux sans parenthèses.
@@ -143,7 +152,7 @@ Opérateurs rencontrés : `=` 3 304 · `>` 1 745 · `!` 894 · `<` 48 · `E` 2. 
 | `SC` `ST` | 10 / 9 | type de serveur / saison | ⚠️ | contexte |
 | `Sv` `HA` | 3 / 1 | inconnu | ⚠️ | `unknown` |
 
-Toute clé absente de cette table → `unknown`, affichée brute, jamais bloquante. Les critères des **objectifs de succès** utilisent d'autres clés (monstres vaincus, donjons, défis…) : à inventorier en M1 avec la même méthode.
+Toute clé absente de cette table → `unknown`, affichée brute, jamais bloquante. Les critères des **objectifs de succès** utilisent d'autres clés, vues en M1-1 ⚠️ : `EM` (monstre tué, ex. `EM>147,0,d` : « avoir tué 147 en donjon »), `HD` (objet obtenu en fin de combat, `HD>33001,0`), `Ob` (récompenses de succès, `Ob!37`), `ST` (drops, `ST=2`). Un atome seul peut être entre parenthèses : `(Qf=1521)`. Inventaire complet au rapport M1-4.
 
 ## 5. Vecteurs de test réels
 
@@ -230,4 +239,6 @@ Notre différence : le plan est **calculé** à partir des critères du jeu et d
 | 2026-09-18 | URLs de base, syntaxe de requête, forme des listes, endpoints du §2.3, champs des succès / objets / recettes / drops / donjons, routes `version`, `criterion`, images | ✅ | code du client `DofusSharp/DofusSharp` (GitHub) |
 | 2026-09-18 | `quests` : `name`, `startCriterion`, total 1 978, page de 50 ; statistiques et vecteurs des §4–5 | ✅ | cache de `AntoninHuaut/DofusNoobsIdentifier` (GitHub, févr. 2026) |
 | 2026-09-18 | `quests` : `levelMin`, `levelMax`, `isDungeonQuest` | ✅ | code de `lurio84/dofus-agente` (GitHub) |
+| 2026-09-18 | M1-1 : `/version`, plafond `$limit` 50, `$limit=0`, routes §2.4, objets embarqués dans `quests` et `achievements`, champs §2.5 (quêtes, succès, objectifs, récompenses, objets, monstres, donjons, tables de référence), type Dofus 23, super-type 14, forme de `/criterion`, en-têtes, licence LPNC-IA 1.0 | ✅ | 56 requêtes réelles, cache `data/raw/_explore/`, détail dans `DATA_NOTES.md` |
+| 2026-09-18 | Motifs d'URL du site (§2.6) | ⚠️ non vérifié | interdit en M1-1 ; à faire par Marc dans son navigateur |
 | — | tout ce qui porte ⚠️ | à faire en M1 | appels réels, résultats dans `DATA_NOTES.md` |

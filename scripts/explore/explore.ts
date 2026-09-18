@@ -251,6 +251,26 @@ async function run(): Promise<void> {
   );
   void quest1329;
   if (itemId !== undefined) await get(`/items/${itemId}`);
+
+  // Extra (after first analysis): sources of Dofus items are mostly achievements, not quests.
+  if (process.argv.includes('--extra') && dofusTypeId !== undefined) {
+    await get('/items', {
+      typeId: String(dofusTypeId),
+      $limit: '50',
+      '$select[]': ['id', 'name', 'questsThatReward', 'achievementsThatReward', 'questsThatUse'],
+    });
+    await get('/items/7043');
+    await get('/achievements/1101');
+  }
+
+  // Extra 2: remaining objective types with parameters, the achievement giving the Ice Dofus, license text.
+  if (process.argv.includes('--extra2')) {
+    for (const typeId of [8, 9, 12, 13, 14, 16, 17]) {
+      await get('/quest-objectives', { typeId: String(typeId), $limit: '2' });
+    }
+    await get('/achievements/922');
+    await get('/');
+  }
 }
 
 run()

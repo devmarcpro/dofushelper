@@ -4,15 +4,15 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**M1-1 — Exploration DofusDB : en cours.** Plan des requêtes dans `scripts/explore/plan.md`, script `scripts/explore/explore.ts`. Exécution en mode boucle (carte blanche de Marc), 60 requêtes au plus.
+**M1-1 — Exploration DofusDB : terminée (56 requêtes, aucun 429). BLOQUANT : licence LPNC-IA 1.0 de l'API** (voir `DATA_NOTES.md` §0 et §13). Toute activité réseau vers DofusDB est suspendue ; M1-2 n'est pas commencée. Marc doit choisir : accord écrit de DofusDB, reprise du code par Marc avec IA accessoire, ou autre source de données.
 
 ## Étapes
 
 - [x] P0 — Lecture critique · 2026-09-18 · livrée en session, sans fichier
 - [x] M0-1 — Socle du dépôt · 2026-09-18 · commits `558eaf2` → `README/PROGRESS` (voir `git log`)
 - [x] M0-2 — CI et déploiement GitHub Pages · 2026-09-18 · commit `5105a3c`
-- [ ] M1-1 — Exploration de l'API DofusDB (60 requêtes max)
-- [ ] M1-2 — Client de snapshot (arrêt après `--dry-run` tant que l'accord DofusDB n'est pas reçu)
+- [x] M1-1 — Exploration de l'API DofusDB (60 requêtes max) · 2026-09-18 · 56 requêtes · `DATA_NOTES.md` v0.1
+- [ ] M1-2 — Client de snapshot · **suspendue** (licence, voir M1-1)
 - [x] M1-3 — Parseur syntaxique des critères (sans réseau) · 2026-09-18 · commit `5a6ba9d`
 - [ ] M1-4 — Compilation v0 et rapport
 - [ ] M1-5 — Tranches verticales et fixtures
@@ -60,6 +60,12 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 8. TypeScript 5.9 conservé.
 
 Restent à Marc : contrôle visuel à 380 px, premier `git push`, réglages GitHub Pages, accord de l'équipe DofusDB (bloque le snapshot complet M1-2).
+
+## Décision en attente de Marc (bloquante, 2026-09-18)
+
+Licence LPNC-IA 1.0 de l'API DofusDB : exclut les projets produits majoritairement par IA et les pipelines automatisés pilotés par IA ; non commercial ; attribution exacte obligatoire ; partage à l'identique. Options dans `DATA_NOTES.md` §13.1. Jusqu'à la décision : aucune requête DofusDB, pas de snapshot, pas de publication de données. Le cache `data/raw/_explore/` (gitignored) est conservé pour instruire la décision ; à supprimer si Marc renonce à DofusDB.
+
+Autres découvertes majeures de M1-1 : les Dofus sont donnés par des **succès** (`achievementsThatReward`), pas par des quêtes ; les critères d'objectifs de succès ont 3 arguments et des lettres (`EM>147,0,d`) : le parseur M1-3 doit être étendu avant M1-4 ; étapes, objectifs et récompenses sont embarqués dans `/quests` ; `accountLinked` existe sur les succès (Q1 tranchée).
 
 ## Notes de reprise
 
