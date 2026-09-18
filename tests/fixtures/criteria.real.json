@@ -1,0 +1,38 @@
+{
+  "_source": "docs/DATA_SOURCES.md §5 — critères de lancement relevés dans un cache DofusDB tiers (février 2026). À revalider contre le snapshot frais (M1-5) : si un critère a changé, le snapshot fait foi.",
+  "vectors": [
+    { "questId": 29, "criterion": "PL>109" },
+    { "questId": 18, "criterion": "BT=1" },
+    { "questId": 56, "criterion": "Ps=1&Pa=1&PL>29&Qf=55" },
+    { "questId": 275, "criterion": "Ps=2&Pa=55&PL>129&(Qf=272|Qf=273|Qf=274)" },
+    { "questId": 215, "criterion": "PL>29&Qf=211&PO!8576&Qa!216&Qf!216" },
+    { "questId": 147, "criterion": "PL>29&PJ>26,79&PZ=1" },
+    { "questId": 318, "criterion": "Ps=1&Pa=70&PL>169&QF>333,0" },
+    { "questId": 580, "criterion": "PL>99&(PO!11267|DD>6,11267)" },
+    { "questId": 658, "criterion": "PO>11540,9" },
+    { "questId": 676, "criterion": "PL>162&POE11563" },
+    { "questId": 143, "criterion": "PL>59&Ps!1&Ps!2" },
+    {
+      "questId": 495,
+      "criterion": "PL>19&PL<51&Qa!496&Qa!497&Qa!498&Qa!500&Qa!882&(Qa=890|Qc=890)"
+    },
+    { "questId": 674, "criterion": "PL>99&Qf=631&(PO=11195|PO=11197|DD>8,11198)&Sc=702" },
+    {
+      "questId": 747,
+      "criterion": "(Qf=720|Qf=721|Qf=722|Qf=723)&Qf=724&Qf=725&Qf=726&Qf=741&Qf=742"
+    },
+    { "questId": 1614, "criterion": "PL>179&Qf=1613&OA=1077&OA=1107&OA=1147" },
+    {
+      "questId": 1317,
+      "criterion": "PL>99&Sc=702&(Qf=710|Qf=711|Qf=1316)&((Pm=217318404&Ps=1&Pa>0)|(Pm=216530944&Ps=2&Pa>0)|(Pm=95684097&Ps!1&Ps!2))"
+    },
+    { "questId": 710, "criterion": "PL>49&Ps=1&Pa>0&Sc=701&Qf!711&Qf!1316" },
+    { "questId": 711, "criterion": "PL>49&Ps=2&Pa>0&Sc=701&Qf!710&Qf!1316" },
+    { "questId": 1316, "criterion": "PL>49&Ps!1&Ps!2&Sc=701&Qf!710&Qf!711" },
+    {
+      "questId": 1329,
+      "name": "Le Dofus des Glaces",
+      "criterion": "Qf=612&Qf=613&Qf=614&Qf=619&Qf=620&Qf=621&Qf=622&Qf=623&Qf=624&Qf=625&Qf=626&Qf=649&Qf=650&Qf=651&Qf=652&Qf=653&Qf=655&Qf=919&Qf=1309&Qf=1330&Qf=1325&Qf=1310&Qf=1333&Qf=1334&(Qf=710|Qf=711|Qf=1316)&Qf=1317&Qf=1318&Qf=1326&Qf=1327"
+    }
+  ]
+}

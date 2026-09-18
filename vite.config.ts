@@ -18,5 +18,11 @@ export default defineConfig({
     environment: 'node',
     // The ESLint guard test boots ESLint in-process; give it room on slow machines.
     testTimeout: 20_000,
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
+      exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'src/main.tsx'],
+      reporter: ['text', 'html'],
+    },
   },
 });
