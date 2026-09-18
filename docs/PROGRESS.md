@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**M1-3 — Parseur syntaxique : terminée.** M0-2 et M1-3 faites en mode boucle. Prochaine étape : M1-1 (exploration DofusDB), qui exige de Marc l'adresse de contact des en-têtes HTTP puis la validation de la liste des URL. Revue de fin de jalon M0 à faire.
+**M1-1 — Exploration DofusDB : en cours.** Plan des requêtes dans `scripts/explore/plan.md`, script `scripts/explore/explore.ts`. Exécution en mode boucle (carte blanche de Marc), 60 requêtes au plus.
 
 ## Étapes
 
@@ -48,15 +48,18 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - `hasMixedPrecedence` est purement lexical (fonctionne aussi sur une chaîne qui ne parse pas).
 - Couverture `src/core/criteria` : 97 % instructions, 100 % lignes (`npm run test:coverage`, devDependency `@vitest/coverage-v8` 5.0.1).
 
-## Questions en attente (posées en P0, sans réponse)
+## Décisions prises sous carte blanche (Marc, 2026-09-18 : « à toi de trancher »)
 
-1. Format final du dataset : `Requirement` compilé au build (recommandé) ou AST au runtime ? Tranche avant M1-4.
-2. SPEC §6.2 : un chemin traversant un `not` ne crée jamais d'arête. À confirmer.
-3. `BT=1` → `{ t: 'all', of: [] }`. À confirmer.
-4. `hasItem` : jamais bloquant, seulement un besoin. À confirmer.
-5. Snapshot phase A : table explicite « items de type Dofus ». À confirmer avant M1-2.
-6. Motifs d'URL du site dofusdb.fr (§2.6) : vérifiés par Marc dans son navigateur ?
-7. Contrôle visuel de la page à 380 px : à faire par Marc (`npm run dev`), l'agent n'a pas de navigateur.
+1. Dataset final : `Requirement` compilé au build, chaîne brute conservée. M1-4 stocke `startRaw` + `startAst` ; M2 remplace l'AST par `start`.
+2. SPEC §6.2 : un chemin traversant un `not` ne crée jamais d'arête.
+3. `BT=1` → `{ t: 'all', of: [] }`.
+4. `hasItem` jamais bloquant : besoin seulement. Retrait de `BlockReason.item` à proposer en M2.
+5. Snapshot phase A : table explicite des objets de type « Dofus » filtrée par `typeId`.
+6. Motifs d'URL de dofusdb.fr : restent ⚠️ tant que Marc ne les a pas vérifiés dans son navigateur ; aucun lien généré avant.
+7. Contact des en-têtes HTTP : `https://github.com/devmarcpro/dofushelper/issues` (jamais l'adresse mail de Marc sans demande explicite).
+8. TypeScript 5.9 conservé.
+
+Restent à Marc : contrôle visuel à 380 px, premier `git push`, réglages GitHub Pages, accord de l'équipe DofusDB (bloque le snapshot complet M1-2).
 
 ## Notes de reprise
 
