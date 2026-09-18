@@ -4,3 +4,6 @@ coverage/
 data/raw/
 public/data/
 package-lock.json
+
+# Documents normatifs et prompts : jamais reformatés par Prettier
+*.md

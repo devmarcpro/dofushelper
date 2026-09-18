@@ -27,6 +27,7 @@
     "preact": "10.29.8"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@types/node": "26.6.1",
     "eslint": "10.10.0",
     "eslint-config-prettier": "10.1.8",
