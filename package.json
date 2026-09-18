@@ -1,0 +1,41 @@
+{
+  "name": "roadbook",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Roadbook — site compagnon Dofus 3 : choisis un objectif, coche ce que tu as fait, obtiens la marche à suivre.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "data:snapshot": "node scripts/not-implemented.mjs data:snapshot",
+    "data:build": "node scripts/not-implemented.mjs data:build",
+    "data:report": "node scripts/not-implemented.mjs data:report",
+    "data:fixture": "node scripts/not-implemented.mjs data:fixture"
+  },
+  "dependencies": {
+    "@preact/signals": "2.11.2",
+    "preact": "10.29.8"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.1",
+    "eslint": "10.10.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.12.0",
+    "prettier": "3.9.8",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  }
+}
