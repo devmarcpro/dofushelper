@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**M0-2 — CI et déploiement : terminée** (mode boucle demandé par Marc). Prochaine étape : M1-3 (parseur syntaxique, sans réseau), car M1-1 exige des entrées de Marc.
+**M1-3 — Parseur syntaxique : terminée.** M0-2 et M1-3 faites en mode boucle. Prochaine étape : M1-1 (exploration DofusDB), qui exige de Marc l'adresse de contact des en-têtes HTTP puis la validation de la liste des URL. Revue de fin de jalon M0 à faire.
 
 ## Étapes
 
@@ -13,7 +13,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M0-2 — CI et déploiement GitHub Pages · 2026-09-18 · commit `5105a3c`
 - [ ] M1-1 — Exploration de l'API DofusDB (60 requêtes max)
 - [ ] M1-2 — Client de snapshot (arrêt après `--dry-run` tant que l'accord DofusDB n'est pas reçu)
-- [ ] M1-3 — Parseur syntaxique des critères (sans réseau)
+- [x] M1-3 — Parseur syntaxique des critères (sans réseau) · 2026-09-18 · commit `5a6ba9d`
 - [ ] M1-4 — Compilation v0 et rapport
 - [ ] M1-5 — Tranches verticales et fixtures
 - [ ] Revue de fin de jalon M0, puis M1
@@ -39,6 +39,14 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - `deploy` se déclenche par `workflow_run` de `ci` réussie sur `main`, et rebuild le commit `head_sha` validé.
 - Base Vite `/dofushelper/` (variable `VITE_BASE` pour la surcharger). Preuve : `vite preview` répond 200 sur `/dofushelper/`, ses assets et `/dofushelper/data/`.
 - Réglages GitHub à faire par Marc : voir README « Déploiement ». Le premier `git push` reste à faire par Marc.
+
+## Décisions techniques prises en M1-3
+
+- `src/core/result.ts` : type `Result` partagé. `src/core/criteria/` : `ast.ts`, `parse.ts` (descente récursive, jamais d'exception), `print.ts`, `index.ts`.
+- Forme canonique de `printCriterion` : tout groupe non-atome est parenthésé ; l'aller-retour parse→print→parse est prouvé sur les 20 vecteurs réels.
+- Grammaire stricte : entiers non signés seulement, pas d'espace. Un `-` ou un espace produit une `ParseError` que `data:report` remontera (M1-4).
+- `hasMixedPrecedence` est purement lexical (fonctionne aussi sur une chaîne qui ne parse pas).
+- Couverture `src/core/criteria` : 97 % instructions, 100 % lignes (`npm run test:coverage`, devDependency `@vitest/coverage-v8` 5.0.1).
 
 ## Questions en attente (posées en P0, sans réponse)
 
