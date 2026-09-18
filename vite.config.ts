@@ -1,7 +1,13 @@
 import { defineConfig } from 'vitest/config';
 
+/**
+ * Base path of the site. GitHub Pages serves the project at https://<user>.github.io/<repo>/,
+ * so the repository name is the base. Override with VITE_BASE (e.g. "/") for another host.
+ */
+const base = process.env.VITE_BASE ?? '/dofushelper/';
+
 export default defineConfig({
-  // The base path for GitHub Pages is configured in M0-2.
+  base,
   // JSX runtime and import source (preact) come from tsconfig.json.
   build: {
     target: 'es2022',
