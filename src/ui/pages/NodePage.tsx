@@ -2,8 +2,7 @@ import type { NodeKey } from '../../core/types';
 import type { Labels, TextPart } from '../labels';
 import { routeHref } from '../router';
 import { fr } from '../strings.fr';
-import { character, engine, labels } from '../store';
-import { computeEffectiveDone } from '../../core/progress';
+import { character, effectiveDone, engine, labels } from '../store';
 import { tickNode } from '../tick';
 
 function GameText({ parts }: { parts: TextPart[] }) {
@@ -58,7 +57,7 @@ export function NodePage({ nodeKey }: { nodeKey: NodeKey }) {
     );
   }
   const who = character.value;
-  const done = who ? computeEffectiveDone(currentEngine.graph, who) : null;
+  const done = who ? effectiveDone.value : null;
   const explicit = done?.explicit.has(nodeKey) ?? false;
   const impliedBy = done?.implied.get(nodeKey) ?? null;
   const quest = node.kind === 'quest' ? names.quest(node.id) : undefined;

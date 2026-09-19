@@ -4,7 +4,7 @@ import { addGoal, removeGoal, sameGoal } from '../../state/actions';
 import { routeHref } from '../router';
 import { search, type SearchEntry, type SearchKind } from '../search';
 import { fr } from '../strings.fr';
-import { character, dispatch, engine, labels, searchIndex } from '../store';
+import { character, dispatch, engine, labels, planFor, searchIndex } from '../store';
 
 const TABS: readonly SearchKind[] = ['goal', 'achievement', 'quest'];
 const LIMIT = 40;
@@ -96,7 +96,7 @@ export function Catalog() {
         {entries.map((entry) => {
           const goal = goalOf(entry);
           const followed = who?.goals.some((g) => sameGoal(g, goal)) ?? false;
-          const plan = who && followed ? currentEngine.resolve(goal, who) : null;
+          const plan = who && followed ? planFor.value(goal) : null;
           const href = routeHref({ t: 'plan', goal, tab: 'steps' });
           return (
             <li class="card" key={`${entry.kind}-${entry.id}`}>

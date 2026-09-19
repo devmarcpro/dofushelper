@@ -1,14 +1,13 @@
 import type { Goal } from '../../core/types';
 import { routeHref } from '../router';
 import { fr } from '../strings.fr';
-import { character, engine, labels } from '../store';
+import { character, labels, planFor } from '../store';
 
 function GoalCard({ goal }: { goal: Goal }) {
   const who = character.value;
-  const currentEngine = engine.value;
   const names = labels.value;
-  if (!who || !currentEngine || !names) return null;
-  const plan = currentEngine.resolve(goal, who);
+  const plan = planFor.value(goal);
+  if (!who || !names || !plan) return null;
   const next = plan.nextActions[0];
   const finished = plan.progress.total > 0 && plan.progress.done === plan.progress.total;
   const href = routeHref({ t: 'plan', goal, tab: 'steps' });

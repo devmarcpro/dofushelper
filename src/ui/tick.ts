@@ -1,19 +1,16 @@
 /** Ticking a node: explicit fact in the state, then a message saying what was deduced (SPEC §9). */
-import { computeEffectiveDone } from '../core/progress';
 import type { NodeKey } from '../core/types';
 import { setNodeDone } from '../state/actions';
 import { fr } from './strings.fr';
-import { character, dispatch, engine, toast } from './store';
+import { character, dispatch, effectiveDone, toast } from './store';
 
 export function tickNode(key: NodeKey, done: boolean): void {
   const who = character.value;
-  const graph = engine.value?.graph;
-  if (!who || !graph) return;
-  const before = computeEffectiveDone(graph, who).effective.size;
+  // Shared with the rendering, so a click walks the graph once instead of three times.
+  const before = effectiveDone.value?.effective.size;
+  if (!who || before === undefined) return;
   dispatch((state, deps) => setNodeDone(state, who.id, key, done, deps), true);
-  const next = character.value;
-  if (!next) return;
-  const after = computeEffectiveDone(graph, next).effective.size;
+  const after = effectiveDone.value?.effective.size ?? before;
   if (done) {
     const implied = Math.max(0, after - before - 1);
     toast.value = {

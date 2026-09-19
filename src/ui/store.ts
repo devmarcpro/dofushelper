@@ -4,7 +4,9 @@
  * This is the only place of the UI that touches localStorage, the clock and the URL hash.
  */
 import { computed, signal } from '@preact/signals';
-import { createEngine, type Engine } from '../core/engine';
+import { createEngine, type Engine, type FullPlan } from '../core/engine';
+import { computeEffectiveDone } from '../core/progress';
+import type { Character, Goal } from '../core/types';
 import { loadDataset, type DatasetError, type LoadedDataset } from '../data/load';
 import { activeCharacter, setDatasetVersion } from '../state/actions';
 import {
@@ -19,7 +21,7 @@ import {
 } from '../state/persistence';
 import { STORAGE_KEY, emptyState, type AppState, type StateDeps } from '../state/types';
 import { createLabels, type Labels } from './labels';
-import { parseRoute, type Route } from './router';
+import { goalSlug, parseRoute, type Route } from './router';
 import { buildSearchIndex, type SearchEntry } from './search';
 
 export const deps: StateDeps = {
@@ -160,6 +162,48 @@ export const labels = computed<Labels | null>(() =>
 export const searchIndex = computed<SearchEntry[]>(() =>
   data.value.t === 'ready' ? buildSearchIndex(data.value.dataset) : [],
 );
+
+/** A character with nothing filled in, so a plan can be shown before any character exists. */
+const ANONYMOUS: Character = {
+  id: '',
+  name: '',
+  breedId: null,
+  level: null,
+  alignment: null,
+  jobs: {},
+  serverName: null,
+  doneQuests: [],
+  doneAchievements: [],
+  inventory: {},
+  goals: [],
+  choices: {},
+  updatedAt: '',
+};
+
+/**
+ * Resolving a plan walks the whole graph (~15 ms), and screens list many goals at once: the
+ * catalog used to re-resolve every followed goal on each keystroke. The cache is rebuilt from
+ * scratch whenever the dataset or the character changes, so nothing derived is ever stale.
+ */
+export const effectiveDone = computed(() => {
+  const graph = engine.value?.graph;
+  return graph ? computeEffectiveDone(graph, character.value ?? ANONYMOUS) : null;
+});
+
+export const planFor = computed(() => {
+  const currentEngine = engine.value;
+  const who = character.value ?? ANONYMOUS;
+  const cache = new Map<string, FullPlan>();
+  return (goal: Goal): FullPlan | null => {
+    if (!currentEngine) return null;
+    const key = goalSlug(goal);
+    const known = cache.get(key);
+    if (known) return known;
+    const plan = currentEngine.resolve(goal, who);
+    cache.set(key, plan);
+    return plan;
+  };
+});
 
 export async function loadData(): Promise<void> {
   data.value = { t: 'loading' };

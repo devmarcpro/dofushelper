@@ -7,25 +7,8 @@ import { setChoice, setOwnedQuantity } from '../../state/actions';
 import type { Labels } from '../labels';
 import { routeHref, type PlanTab } from '../router';
 import { fr } from '../strings.fr';
-import { character, dispatch, engine, labels } from '../store';
+import { character, dispatch, engine, labels, planFor } from '../store';
 import { tickNode } from '../tick';
-
-/** A profile-less character, so that a plan can be shown before any character exists. */
-const ANONYMOUS: Character = {
-  id: '',
-  name: '',
-  breedId: null,
-  level: null,
-  alignment: null,
-  jobs: {},
-  serverName: null,
-  doneQuests: [],
-  doneAchievements: [],
-  inventory: {},
-  goals: [],
-  choices: {},
-  updatedAt: '',
-};
 
 const TABS: readonly PlanTab[] = ['steps', 'gather', 'conditions', 'choices'];
 const nameOf = (names: Labels, key: NodeKey): string => names.nodeName(key) ?? key;
@@ -477,7 +460,8 @@ export function PlanPage({ goal, tab }: { goal: Goal; tab: PlanTab }) {
   const names = labels.value;
   if (!currentEngine || !names) return null;
   const who = character.value;
-  const plan = currentEngine.resolve(goal, who ?? ANONYMOUS);
+  const plan = planFor.value(goal);
+  if (!plan) return null;
   const title = names.goalName(goal);
 
   if (plan.issues.some((i) => i.t === 'noSourceForItem')) {

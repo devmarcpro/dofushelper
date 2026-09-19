@@ -51,6 +51,8 @@ export const fr = {
     tickAll: (n: number) => `Tout cocher (${n})`,
     untickAll: (n: number) => `Tout décocher (${n})`,
     empty: 'Rien à afficher dans cette catégorie avec ces filtres.',
+    hidden: (n: number) =>
+      `${n} ${plural(n, 'quête événementielle ou répétable est masquée', 'quêtes événementielles ou répétables sont masquées')}.`,
     ticked: (ticked: number, implied: number) =>
       implied > 0
         ? `${ticked} ${plural(ticked, 'étape cochée', 'étapes cochées')}, ${implied} ${plural(implied, 'autre déduite', 'autres déduites')}.`

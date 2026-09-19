@@ -1,10 +1,9 @@
 import { useSignal } from '@preact/signals';
-import { computeEffectiveDone } from '../../core/progress';
 import type { NodeKey } from '../../core/types';
 import { setManyNodesDone } from '../../state/actions';
 import { routeHref } from '../router';
 import { fr } from '../strings.fr';
-import { character, data, dispatch, engine, toast } from '../store';
+import { character, data, dispatch, effectiveDone, engine, toast } from '../store';
 import { tickNode } from '../tick';
 
 type Kind = 'quest' | 'achievement';
@@ -62,7 +61,8 @@ export function Bulk() {
     .filter((row) => showSpecial.value || !row.special)
     .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name, 'fr'));
 
-  const done = who ? computeEffectiveDone(currentEngine.graph, who) : null;
+  const hiddenCount = rows.length - visible.length;
+  const done = who ? effectiveDone.value : null;
   const notDone = visible.filter((row) => !done?.effective.has(row.key));
   const explicit = visible.filter((row) => done?.explicit.has(row.key));
 
@@ -70,8 +70,7 @@ export function Bulk() {
     if (!who || keys.length === 0) return;
     const before = done?.effective.size ?? 0;
     dispatch((s, d) => setManyNodesDone(s, who.id, keys, value, d), true);
-    const next = character.value;
-    const after = next ? computeEffectiveDone(currentEngine.graph, next).effective.size : before;
+    const after = effectiveDone.value?.effective.size ?? before;
     toast.value = {
       message: value
         ? fr.bulk.ticked(keys.length, Math.max(0, after - before - keys.length))
@@ -120,14 +119,18 @@ export function Bulk() {
         </select>
       </label>
       {isQuest ? (
-        <label class="check">
-          <input
-            type="checkbox"
-            checked={showSpecial.value}
-            onChange={(e) => (showSpecial.value = e.currentTarget.checked)}
-          />
-          {fr.bulk.showSpecial}
-        </label>
+        <>
+          <label class="check">
+            <input
+              type="checkbox"
+              checked={showSpecial.value}
+              onChange={(e) => (showSpecial.value = e.currentTarget.checked)}
+            />
+            {fr.bulk.showSpecial}
+          </label>
+          {/* Without this, a category announced as 390 quests can show two lines with no reason. */}
+          {hiddenCount > 0 ? <p class="muted">{fr.bulk.hidden(hiddenCount)}</p> : null}
+        </>
       ) : null}
 
       {selected !== null ? (
