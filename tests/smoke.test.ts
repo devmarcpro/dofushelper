@@ -55,7 +55,9 @@ describe('smoke test on the full dataset', () => {
     console.log(
       `buildGraph + indexes: ${buildMs.toFixed(1)} ms for ${engine.graph.nodes.size} nodes`,
     );
-    expect(buildMs).toBeLessThan(300);
+    // Target: 300 ms on a mid-range phone (SPEC §6.9); measured 56 ms on the dev machine.
+    // The assertion is a loose regression guard: CI runners and coverage runs are much slower.
+    expect(buildMs).toBeLessThan(2000);
   });
 
   it('resolves every goal without throwing, within the time budget', () => {
@@ -79,8 +81,9 @@ describe('smoke test on the full dataset', () => {
     console.log(
       `resolved ${goals.length} goals in ${total.toFixed(0)} ms (mean ${(total / goals.length).toFixed(2)} ms) · slowest ${slowest.ms.toFixed(1)} ms ${slowest.goal} · largest plan ${largest.nodes} nodes ${largest.goal} · cycle issues ${cycles} · missing-node issues ${missing}`,
     );
+    // Target: 50 ms per plan (SPEC §6.9); measured 0.28 ms on average, 10 ms at worst.
     expect(total / goals.length).toBeLessThan(50);
-    expect(slowest.ms).toBeLessThan(250);
+    expect(slowest.ms).toBeLessThan(2000);
   });
 
   it('every plan is ordered: prerequisites come before dependants', () => {
