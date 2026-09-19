@@ -220,6 +220,46 @@ describe('inventory simulation (SPEC §6.6)', () => {
   });
 });
 
+describe('crafted items (SPEC §6.6)', () => {
+  /**
+   * Regression: a craft consumed its ingredients but produced nothing, so an item crafted inside
+   * the plan was ALSO listed as "to gather" — the ingredients and the result both. Real case:
+   * quest 320, which crafts item 10046 then hands it in; 45 occurrences in the real dataset.
+   */
+  it('credits the crafted item, so it is not asked for twice', () => {
+    const craft: Objective = {
+      id: 9,
+      text: 'FAKE',
+      t: 'craft',
+      itemId: OTHER,
+      qty: 1,
+      ingredients: [[ITEM, 3]],
+    };
+    const { needs } = run([quest(A, 'BT=1', [step(1, [craft, bring(OTHER, 1)])])], A);
+    // Only the ingredients have to be gathered; the crafted item shows as provided by the plan.
+    expect(needs.items.map((i) => [i.itemId, i.toAcquire])).toEqual([
+      [ITEM, 3],
+      [OTHER, 0],
+    ]);
+    expect(needs.items.find((i) => i.itemId === OTHER)?.providedBy).toEqual([
+      { key: keyOf(A), qty: 1 },
+    ]);
+  });
+
+  it('still asks for the crafted item when the plan needs more than it makes', () => {
+    const craft: Objective = {
+      id: 9,
+      text: 'FAKE',
+      t: 'craft',
+      itemId: OTHER,
+      qty: 1,
+      ingredients: [[ITEM, 3]],
+    };
+    const { needs } = run([quest(A, 'BT=1', [step(1, [craft, bring(OTHER, 4)])])], A);
+    expect(needs.items.find((i) => i.itemId === OTHER)?.toAcquire).toBe(3);
+  });
+});
+
 describe('level-dependent rewards', () => {
   const bands = [band([[ITEM, 3]], 20, 80), band([[ITEM, 5]], 81, 200)];
 

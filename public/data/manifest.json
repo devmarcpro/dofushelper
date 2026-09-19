@@ -1,8 +1,8 @@
 {
-  "format": 1,
+  "format": 2,
   "gameVersion": "3.6.11.15",
   "lang": "fr",
-  "builtAt": "2026-09-19T09:33:00.243Z",
+  "builtAt": "2026-09-19T10:52:35.835Z",
   "attribution": "Données issues de DofusDB. Utilisation soumise à la LPNC-IA 1.0.",
   "files": [
     {
@@ -12,8 +12,8 @@
     },
     {
       "file": "achievements.json",
-      "bytes": 2210581,
-      "sha256": "b6fdf0c2df1dcccb840b72fe7eb1770b0afa4462cbbb1b23fcbbe9c7ee052277"
+      "bytes": 2697511,
+      "sha256": "783d2223e58273c5dccfdcedf83928de9915abcdedcc8fd92f44e88640dc5a3c"
     },
     {
       "file": "items.json",

@@ -151,19 +151,24 @@ export function NodePage({ nodeKey }: { nodeKey: NodeKey }) {
             </p>
           ) : null}
           <h2 class="section-title">{fr.sheet.rewards}</h2>
-          {achievement.rewards.items.length === 0 ? (
+          {achievement.rewardBands.every((band) => band.reward.items.length === 0) ? (
             <p class="muted">{fr.sheet.noRewards}</p>
           ) : null}
-          <ul class="plain">
-            {achievement.rewards.items.map((item) => (
-              <li key={item.itemId}>
-                {fr.sheet.rewardLine(
-                  names.itemName(item.itemId) ?? fr.sheet.unknownRef('objet', item.itemId),
-                  item.qty,
-                )}
-              </li>
-            ))}
-          </ul>
+          {achievement.rewardBands.map((band, index) =>
+            band.reward.items.length === 0 ? null : (
+              <p key={index}>
+                <span class="muted">{fr.sheet.rewardBand(band.levelMin, band.levelMax)} : </span>
+                {band.reward.items
+                  .map((item) =>
+                    fr.sheet.rewardLine(
+                      names.itemName(item.itemId) ?? fr.sheet.unknownRef('objet', item.itemId),
+                      item.qty,
+                    ),
+                  )
+                  .join(', ')}
+              </p>
+            ),
+          )}
         </>
       ) : null}
 

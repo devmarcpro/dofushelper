@@ -51,7 +51,7 @@ function fakeAchievement(
       criterion: criterion(c),
     })),
     missingObjectiveIds,
-    rewards: noReward,
+    rewardBands: [],
     dbNeed: null,
   };
 }

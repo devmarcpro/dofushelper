@@ -138,7 +138,9 @@ export function extractSubgraph(
   }
   for (const achievement of achievements) {
     for (const objective of achievement.objectives) fromCriterion(objective.criterion);
-    for (const item of achievement.rewards.items) itemIds.add(item.itemId);
+    for (const band of achievement.rewardBands) {
+      for (const item of band.reward.items) itemIds.add(item.itemId);
+    }
   }
 
   // One level of recipe ingredients, as in the full dataset.

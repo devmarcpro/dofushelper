@@ -209,6 +209,47 @@ describe('resolvePlan — synthetic cases', () => {
     achievements: [],
   });
 
+  /**
+   * Regression: a branch that asks for nothing the plan can carry out (a context condition, an
+   * item to own, a node absent from the dataset) has zero remaining nodes. It used to win the
+   * default tie-break every time, so a whole chain of quests silently vanished and the goal was
+   * announced as available. Real case: quest 848, "PL>19&(Qa=878|Qf=878)" — 273 choice points
+   * in the real dataset took the branch with nothing in it.
+   */
+  it('prefers a branch it can actually plan over one with nothing to do', () => {
+    const chain = buildGraph({
+      quests: [
+        fakeQuest(9000001, 'BT=1'),
+        fakeQuest(9000002, 'Qf=9000001'),
+        // "in progress OR finished": only the second branch is something a plan can carry out.
+        fakeQuest(9000010, 'PL>19&(Qa=9000002|Qf=9000002)'),
+        // the other branch owns an item, which is a need, never a step
+        fakeQuest(9000011, 'Qf=9000002|PO=9100001'),
+        // and here the alternative points at a node the dataset does not have
+        fakeQuest(9000012, 'Qf=9000002|Qf=9099999'),
+      ],
+      achievements: [],
+    });
+    for (const goalId of [9000010, 9000011, 9000012]) {
+      const plan = resolvePlan(chain, { t: 'quest', id: goalId }, character({ level: 200 }));
+      const keys = plan.nodes.map((n) => n.key);
+      expect(keys).toContain('q:9000002');
+      expect(keys).toContain('q:9000001');
+      expect(plan.nodes.at(-1)?.status).toBe('blocked');
+      expect(plan.choicePoints[0]?.chosenBy).toBe('default');
+    }
+  });
+
+  it('still takes the only branch available when none can be planned', () => {
+    const graphOnly = buildGraph({
+      quests: [fakeQuest(9000013, 'Sc=1|PO=9100001')],
+      achievements: [],
+    });
+    const plan = resolvePlan(graphOnly, { t: 'quest', id: 9000013 }, character());
+    expect(plan.nodes).toHaveLength(1);
+    expect(plan.choicePoints).toHaveLength(0); // an `any` without nodes is not a choice point
+  });
+
   it('reports a cycle, ignores the edge and still returns a plan', () => {
     const plan = resolvePlan(graph, { t: 'quest', id: 9000003 }, character());
     expect(plan.issues.some((i) => i.t === 'cycle')).toBe(true);

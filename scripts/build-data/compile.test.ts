@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { rewardItemsForLevel } from '../../src/core/needs';
 import { EMPTY_OVERRIDES, compileDataset, type RawSnapshot } from './compile';
 import { stableStringify } from './stable-json';
 import { validateDataset } from './validate';
@@ -117,6 +118,13 @@ function fakeRaw(): RawSnapshot {
               itemsQuantityReward: [1],
               titlesReward: [],
               ornamentsReward: [3],
+            },
+            // Level-gated rows: the player receives ONE of them, never the sum.
+            { criterions: 'PL>8&PL<30', itemsReward: [9100002], itemsQuantityReward: [2] },
+            {
+              criterions: 'PL>29&PL<50&Ob!9000201',
+              itemsReward: [9100002],
+              itemsQuantityReward: [7],
             },
             null,
           ],
@@ -314,13 +322,61 @@ describe('compileDataset', () => {
     });
     expect(achievement?.objectives[0]?.criterion.req).toEqual({ t: 'questDone', id: 9000002 });
     expect(achievement?.missingObjectiveIds).toEqual([9000303]);
-    expect(achievement?.rewards).toEqual({
-      items: [{ itemId: 9100004, qty: 1 }],
-      titles: [],
-      ornaments: [3],
-      emotes: [],
-      spells: [],
-    });
+    expect(achievement?.rewardBands).toEqual([
+      {
+        levelMin: -1,
+        levelMax: -1,
+        reward: {
+          items: [{ itemId: 9100004, qty: 1 }],
+          titles: [],
+          ornaments: [3],
+          emotes: [],
+          spells: [],
+        },
+      },
+      {
+        levelMin: 9,
+        levelMax: 29,
+        reward: {
+          items: [{ itemId: 9100002, qty: 2 }],
+          titles: [],
+          ornaments: [],
+          emotes: [],
+          spells: [],
+        },
+      },
+      {
+        levelMin: 30,
+        levelMax: 49,
+        reward: {
+          items: [{ itemId: 9100002, qty: 7 }],
+          titles: [],
+          ornaments: [],
+          emotes: [],
+          spells: [],
+        },
+      },
+    ]);
+  });
+
+  /**
+   * Regression: reward rows used to be summed into one Reward, so a level-gated reward of 2 or 7
+   * became 9 — and the engine then believed the player already owned enough and had nothing to
+   * farm. Confirmed on real achievement 570, where 10 rows added up to 78 instead of at most 17.
+   */
+  it('never sums level-gated reward rows', () => {
+    const bands = dataset.achievements[0]?.rewardBands ?? [];
+    // A level-20 character gets the 9-29 row (2) plus the unbounded row, never 2 + 7.
+    expect(rewardItemsForLevel(bands, 20)).toEqual([
+      { itemId: 9100002, qty: 2 },
+      { itemId: 9100004, qty: 1 },
+    ]);
+    expect(rewardItemsForLevel(bands, 40)).toEqual([
+      { itemId: 9100002, qty: 7 },
+      { itemId: 9100004, qty: 1 },
+    ]);
+    // Below every band, only the unbounded row is granted.
+    expect(rewardItemsForLevel(bands, 5)).toEqual([{ itemId: 9100004, qty: 1 }]);
   });
 
   it('flags quest items from the super type, attaches recipes, filters drops to known items', () => {

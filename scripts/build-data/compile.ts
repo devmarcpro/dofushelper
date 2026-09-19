@@ -3,6 +3,7 @@
  * No file system, no clock: deterministic by construction. Unexpected shapes never throw
  * (golden rule 7): they are skipped and reported in `warnings`.
  */
+import { parseCriterionSyntax, type CriterionAst } from '../../src/core/criteria';
 import {
   compileCriterion,
   compileCriterionWithOverride,
@@ -199,6 +200,34 @@ export function compileDataset(
     };
   }
 
+  /**
+   * Level range carried by a reward criterion, e.g. "PL>8&PL<30" → 9 to 29. Other keys (such as
+   * `Ob!<id>`, "not already obtained") do not restrict the level and give an unbounded band.
+   */
+  function levelRangeOf(rawCriterion: string): { levelMin: number; levelMax: number } {
+    const range = { levelMin: -1, levelMax: -1 };
+    if (rawCriterion.length === 0) return range;
+    const parsed = parseCriterionSyntax(rawCriterion);
+    if (!parsed.ok) {
+      warnings.push(`critère de récompense non analysable, bande sans borne : ${rawCriterion}`);
+      return range;
+    }
+    const visit = (node: CriterionAst): void => {
+      if (node.k !== 'atom') {
+        // Only a conjunction narrows the range; an `or` is left unbounded on purpose.
+        if (node.k === 'and') node.items.forEach(visit);
+        return;
+      }
+      const value = node.args[0];
+      if (node.key !== 'PL' || typeof value !== 'number') return;
+      if (node.op === '>') range.levelMin = Math.max(range.levelMin, value + 1);
+      else if (node.op === '<')
+        range.levelMax = range.levelMax === -1 ? value - 1 : Math.min(range.levelMax, value - 1);
+    };
+    visit(parsed.value);
+    return range;
+  }
+
   /** The game stores one reward row per character level: merge contiguous identical rows. */
   function mergeBands(bands: RewardBand[]): RewardBand[] {
     const sorted = [...bands].sort((a, b) => a.levelMin - b.levelMin || a.levelMax - b.levelMax);
@@ -377,20 +406,26 @@ export function compileDataset(
       }
     }
     const embedded = new Set(objectives.map((o) => o.id));
-    const reward = emptyReward();
-    for (const rawReward of asArray(a.rewards)) {
-      const r = asObj(rawReward);
-      if (!r) continue;
-      const ids = asArray(r.itemsReward);
-      const quantities = asArray(r.itemsQuantityReward);
-      ids.forEach((itemId, index) => {
-        if (typeof itemId === 'number') addItems(reward, itemId, asNum(quantities[index]) ?? 1);
-      });
-      reward.titles.push(...numList(r.titlesReward));
-      reward.ornaments.push(...numList(r.ornamentsReward));
-      reward.emotes.push(...numList(r.emotesReward));
-      reward.spells.push(...numList(r.spellsReward));
-    }
+    // Reward rows are gated by a criterion, usually a level range ("PL>8&PL<30"): the player
+    // receives ONE of them, so they become bands like quest steps, never a single sum.
+    const rewardBands = mergeBands(
+      asArray(a.rewards).flatMap((rawReward): RewardBand[] => {
+        const r = asObj(rawReward);
+        if (!r) return [];
+        const reward = emptyReward();
+        const ids = asArray(r.itemsReward);
+        const quantities = asArray(r.itemsQuantityReward);
+        ids.forEach((itemId, index) => {
+          if (typeof itemId === 'number') addItems(reward, itemId, asNum(quantities[index]) ?? 1);
+        });
+        reward.titles = numList(r.titlesReward);
+        reward.ornaments = numList(r.ornamentsReward);
+        reward.emotes = numList(r.emotesReward);
+        reward.spells = numList(r.spellsReward);
+        const range = levelRangeOf(typeof r.criterions === 'string' ? r.criterions : '');
+        return [{ ...range, reward: sortReward(reward) }];
+      }),
+    );
     const compiled: CompiledAchievement = {
       id,
       name: text(a.name),
@@ -404,7 +439,7 @@ export function compileDataset(
       missingObjectiveIds: numList(a.objectiveIds).filter(
         (objectiveId) => !embedded.has(objectiveId),
       ),
-      rewards: sortReward(reward),
+      rewardBands,
       dbNeed: compileNeed(a.need),
     };
     const override = overrides.achievements[String(id)];

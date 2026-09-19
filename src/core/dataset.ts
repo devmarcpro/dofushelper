@@ -1,5 +1,6 @@
 /**
  * Shape of the compiled dataset served from public/data/ (DATA_SOURCES.md §6).
+ * Format 2: achievement rewards are level bands, like quest steps.
  * Format 1 (M2-5): every criterion is stored raw and as a compiled Requirement, so the browser
  * has nothing to parse. Format 0 (M1-4) stored the syntactic AST instead.
  */
@@ -17,7 +18,7 @@ import type {
   Reward,
 } from './types';
 
-export const DATASET_FORMAT = 1;
+export const DATASET_FORMAT = 2;
 
 export interface CompiledCriterion {
   raw: string;
@@ -90,7 +91,11 @@ export interface CompiledAchievement {
   objectives: { id: number; name: string; order: number | null; criterion: CompiledCriterion }[];
   /** Objective ids listed by the game data but absent upstream. */
   missingObjectiveIds: number[];
-  rewards: Reward;
+  /**
+   * The game gates reward rows by character level (`PL>8&PL<30`), so only ONE bounded band is
+   * actually received. Same shape as quest steps; read it with `rewardItemsForLevel`.
+   */
+  rewardBands: RewardBand[];
   dbNeed: DbNeed | null;
   override?: NodeOverride;
 }

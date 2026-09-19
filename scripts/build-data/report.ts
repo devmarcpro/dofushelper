@@ -218,7 +218,7 @@ async function main(): Promise<void> {
     }
   }
   for (const a of dataset.achievements)
-    for (const item of a.rewards.items)
+    for (const item of a.rewardBands.flatMap((b) => b.reward.items))
       if (!itemIds.has(item.itemId)) missing.items.add(item.itemId);
   const missingObjectives = dataset.achievements.reduce(
     (n, a) => n + a.missingObjectiveIds.length,

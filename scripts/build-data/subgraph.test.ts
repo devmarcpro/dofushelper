@@ -51,7 +51,15 @@ function achievement(id: number, criteria: string[], rewardItem?: number): Compi
       criterion: compileCriterion(c),
     })),
     missingObjectiveIds: [],
-    rewards: rewardItem ? { ...noReward, items: [{ itemId: rewardItem, qty: 1 }] } : noReward,
+    rewardBands: rewardItem
+      ? [
+          {
+            levelMin: -1,
+            levelMax: -1,
+            reward: { ...noReward, items: [{ itemId: rewardItem, qty: 1 }] },
+          },
+        ]
+      : [],
     dbNeed: null,
   };
 }

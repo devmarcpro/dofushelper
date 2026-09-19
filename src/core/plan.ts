@@ -160,16 +160,28 @@ export function resolvePlan(
     }
     if (chosen === -1) {
       chosenBy = 'default';
+      const usable = branches
+        .map((branch, index) => ({ branch, index, verdict: branchVerdict(branch) }))
+        .filter((b) => b.verdict !== 'fail' || branches.every((x) => branchVerdict(x) === 'fail'));
+      /*
+       * A branch that asks for nothing the plan can carry out — a context condition, an item to
+       * own, a node absent from the dataset — has zero remaining nodes, so it used to win every
+       * time and silently drop a whole chain of quests from the plan (the "Qa=N | Qf=N" idiom,
+       * 273 choice points in the real dataset). Prefer a branch that can actually be planned.
+       */
+      const plannable = usable.filter((b) => {
+        const leaves = nodeLeaves(b.branch);
+        return leaves.length > 0 && leaves.every((key) => graph.nodes.has(key));
+      });
+      const pool = plannable.length > 0 ? plannable : usable;
       let best = Number.POSITIVE_INFINITY;
-      branches.forEach((branch, index) => {
-        if (branchVerdict(branch) === 'fail' && branches.some((b) => branchVerdict(b) !== 'fail'))
-          return;
-        const remaining = remainingNodes(branch);
+      for (const candidate of pool) {
+        const remaining = remainingNodes(candidate.branch);
         if (remaining < best) {
           best = remaining;
-          chosen = index;
+          chosen = candidate.index;
         }
-      });
+      }
       if (chosen === -1) chosen = 0;
     }
     choicePoints.push({ id, owner, branches, chosen, chosenBy });

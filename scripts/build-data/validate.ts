@@ -108,7 +108,7 @@ export function validateDataset(dataset: CompiledDataset): string[] {
       level: isIntOrNull,
       objectives: isArr,
       missingObjectiveIds: isArr,
-      rewards: reward,
+      rewardBands: isArr,
     });
     for (const objective of achievement.objectives) {
       checkFields(`${where}.objectives[${objective.id}]`, objective, {

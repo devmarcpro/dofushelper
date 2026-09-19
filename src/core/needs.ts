@@ -24,33 +24,51 @@ type ItemEvent =
   | { t: 'reward'; itemId: ItemId; qty: number; key: NodeKey }
   | { t: 'consume' | 'show'; itemId: ItemId; qty: number; key: NodeKey };
 
+const isUnbounded = (band: RewardBand): boolean => band.levelMin === -1 && band.levelMax === -1;
+
 /**
- * Items of a step reward for a character level. Rewards come in level bands (-1 = unbounded).
- * When the level is not filled in, only what every band guarantees is counted.
+ * Items actually received for a character level. Rewards come in level bands; a band with no
+ * bounds (-1, -1) is granted on top of the matching band, not instead of it. Only ONE bounded
+ * band applies: summing them would make the engine believe the player already owns far more
+ * than the game gives. When the level is not filled in, only what every bounded band guarantees
+ * is counted.
  */
 export function rewardItemsForLevel(
   bands: readonly RewardBand[],
   level: number | null,
 ): Reward['items'] {
   if (bands.length === 0) return [];
+  const bounded = bands.filter((b) => !isUnbounded(b));
+  const picked: Reward['items'][] = bands.filter(isUnbounded).map((b) => b.reward.items);
+
   if (level !== null) {
-    const band = bands.find(
+    const band = bounded.find(
       (b) =>
         (b.levelMin === -1 || b.levelMin <= level) && (b.levelMax === -1 || level <= b.levelMax),
     );
-    return band ? band.reward.items : [];
+    if (band) picked.push(band.reward.items);
+  } else {
+    const [first, ...rest] = bounded;
+    if (first) {
+      picked.push(
+        first.reward.items
+          .map((item) => ({
+            itemId: item.itemId,
+            qty: Math.min(
+              item.qty,
+              ...rest.map((b) => b.reward.items.find((i) => i.itemId === item.itemId)?.qty ?? 0),
+            ),
+          }))
+          .filter((item) => item.qty > 0),
+      );
+    }
   }
-  const [first, ...rest] = bands;
-  if (!first) return [];
-  return first.reward.items
-    .map((item) => ({
-      itemId: item.itemId,
-      qty: Math.min(
-        item.qty,
-        ...rest.map((b) => b.reward.items.find((i) => i.itemId === item.itemId)?.qty ?? 0),
-      ),
-    }))
-    .filter((item) => item.qty > 0);
+
+  const total = new Map<number, number>();
+  for (const items of picked) {
+    for (const item of items) total.set(item.itemId, (total.get(item.itemId) ?? 0) + item.qty);
+  }
+  return [...total].map(([itemId, qty]) => ({ itemId, qty })).sort((a, b) => a.itemId - b.itemId);
 }
 
 function positiveItemConditions(
@@ -135,6 +153,9 @@ export function computeNeeds(
             case 'craft':
               for (const [itemId, qty] of o.ingredients)
                 events.push({ t: 'consume', itemId, qty, key });
+              // The crafted item is produced here: without this it would be counted again as a
+              // need when a later step asks for it, on top of its own ingredients.
+              events.push({ t: 'reward', itemId: o.itemId, qty: o.qty, key });
               break;
             case 'killMonster':
               addMonster(o.monsterId, o.qty, o.singleFight, key);
@@ -153,7 +174,8 @@ export function computeNeeds(
         }
       }
     } else {
-      for (const item of index.achievements.get(id)?.rewards.items ?? []) {
+      const bands = index.achievements.get(id)?.rewardBands ?? [];
+      for (const item of rewardItemsForLevel(bands, character.level)) {
         events.push({ t: 'reward', itemId: item.itemId, qty: item.qty, key });
       }
     }
