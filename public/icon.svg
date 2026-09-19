@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Roadbook">
+  <!-- Original icon: a route with checked waypoints. No game artwork. -->
+  <rect width="128" height="128" rx="24" fill="#7a4d10" />
+  <path d="M30 98 C30 70, 98 74, 98 46 S40 38, 40 26" fill="none" stroke="#f7f5f0" stroke-width="8" stroke-linecap="round" stroke-dasharray="2 16" />
+  <circle cx="30" cy="98" r="12" fill="#f7f5f0" />
+  <circle cx="98" cy="46" r="12" fill="#f7f5f0" />
+  <path d="M24 98 l5 5 l9 -11" fill="none" stroke="#7a4d10" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M92 46 l5 5 l9 -11" fill="none" stroke="#7a4d10" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="40" cy="26" r="10" fill="none" stroke="#f7f5f0" stroke-width="6" />
+</svg>

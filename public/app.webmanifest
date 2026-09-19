@@ -1,0 +1,12 @@
+{
+  "name": "Roadbook",
+  "short_name": "Roadbook",
+  "description": "Choisis un objectif, coche ce que tu as fait, suis la marche à suivre. Site de fan non officiel.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#15130f",
+  "theme_color": "#7a4d10",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

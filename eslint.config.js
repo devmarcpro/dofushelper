@@ -72,6 +72,12 @@ export default defineConfig([
     languageOptions: { globals: { ...globals.node } },
   },
 
+  // Service worker: plain JS served as is
+  {
+    files: ['public/sw.js'],
+    languageOptions: { globals: { ...globals.serviceworker } },
+  },
+
   // Guard rails for the pure core (CLAUDE.md, golden rule 5)
   {
     files: ['src/core/**/*.{ts,tsx}'],
