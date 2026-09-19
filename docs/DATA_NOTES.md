@@ -168,3 +168,72 @@ Constats :
 2. **322 objectifs de succès embarqués valent `null`** (sur 9 168) ; les mêmes ids demandés à `/achievement-objectives` renvoient `total: 0` : ils n'existent pas en amont. À traiter comme objectifs manquants (`DataIssue`), jamais comme erreur.
 3. Malgré `$select`, l'API ajoute des champs peuplés (`type` et `img` sur les objets ; `ingredients`, `result`, `job` sur les recettes ; `steps` sur les quêtes) : le poids vient de là. `data:build` ne garde que le nécessaire.
 4. Budget : 364 requêtes pour tout le jalon, contre 2 000 autorisées.
+
+## 15. Catalogue « Dofus » et tranches verticales (M1-5, 2026-09-19)
+
+Taille du plan = fermeture des prérequis `Qf` / `QF` / `OA` positifs à partir de l'AST syntaxique, **toutes les branches des `|` comptées** (borne haute). Les atomes niés (`Qf!…`) ne sont jamais des prérequis. Produit par `npm run data:fixture -- --catalog`.
+
+| Objet | Nom | Niv. | Source | Quêtes | Succès | Nœuds | Manquants |
+|---:|---|---:|---|---:|---:|---:|---:|
+| 972 | Dofus Cawotte | 60 | succès 992 | 0 | 1 | 1 | 0 |
+| 7113 | Dofawa | 6 | quête 1959 | 2 | 0 | 2 | 0 |
+| 13344 | Dolmanax | 100 | succès 568 | 1 | 1 | 2 | 0 |
+| 15235 | Dotruche | 110 | quête 1517 | 4 | 1 | 5 | 0 |
+| 17078 | Dokoko | 80 | succès 1397 | 5 | 1 | 6 | 0 |
+| 10907 | Dokille | 80 | succès 980 | 6 | 1 | 7 | 0 |
+| 31794 | Dofoozbz | 170 | succès 8855 | 7 | 1 | 8 | 0 |
+| 23237 | Domakuro | 120 | succès 3034 | 8 | 1 | 9 | 0 |
+| 6980 | Dofus Vulbis | 180 | succès 2198 | 9 | 1 | 10 | 0 |
+| 23408 | Dorigami | 150 | succès 3078 | 11 | 1 | 12 | 0 |
+| 7112 | Dofus Tacheté | 180 | succès 3082 | 13 | 1 | 14 | 0 |
+| 16061 | Dofus des Veilleurs | 100 | succès 1187 | 15 | 5 | 20 | 0 |
+| 26066 | Dofus du Cauchemar | 180 | succès 5162 | 32 | 1 | 33 | 0 |
+| 19398 | Dofus Forgelave | 180 | succès 1656 | 28 | 6 | 34 | 0 |
+| 694 | Dofus Pourpre | 110 | succès 1101 | 37 | 1 | 38 | 0 |
+| 737 | Dofus Émeraude | 100 | succès 1048 | 37 | 1 | 38 | 0 |
+| 739 | Dofus Turquoise | 160 | succès 1385 | 39 | 1 | 40 | 0 |
+| 7114 | Dofus Ébène | 180 | succès 1704 | 39 | 1 | 40 | 0 |
+| 7115 | Dofus Ivoire | 180 | succès 1622 | 39 | 1 | 40 | 0 |
+| 18043 | Dofus Abyssal | 180 | succès 1498 | 40 | 8 | 48 | 0 |
+| 7043 | Dofus des Glaces | 180 | succès 922 | 43 | 7 | 50 | 0 |
+| 19629 | Dofus Argenté | 20 | succès 1679 | 74 | 15 | 89 | 0 |
+| 8698 | Dofus Nébuleux | 180 | succès 1188 | 101 | 21 | 122 | 0 |
+| 29136 | Dofus Sylvestre | 180 | succès 7761 | 148 | 15 | 163 | 0 |
+| 20286 | Dofus Argenté Scintillant | 180 | quête 2051 | 149 | 24 | 173 | 0 |
+
+9 objets de type Dofus n'ont aucune source dans les données et sont absents du catalogue : 7754 Dofus Ocre, 8072 Dofus Kaliptus, 20833 et 20987 Dofus Cacao, 21186 Dofus Vulbis (niv. 100), 27803 Dom de Pin, 29134 Dofus Sylvestre, 29135 Dofus Verdoyant, 30356 Jyfus. À traiter par override de `goals.json` si Marc veut les proposer.
+
+**Tranches retenues pour M2.**
+
+1. **Dotruche (objet 15235)** : 5 nœuds (4 quêtes, 1 succès), source = quête 1517. C'est le plus petit plan non trivial : Dofus Cawotte (1 nœud), Dofawa et Dolmanax (2 nœuds) ont moins de 3 nœuds et ont été écartés pour cette raison.
+2. **Quête 1329 « Le Dofus des Glaces »** : 43 quêtes dans la fermeture, 14 donjons cités, 0 nœud manquant.
+3. En plus : **objet 7043 « Dofus des Glaces »** (50 nœuds : 43 quêtes et 7 succès). C'est le vrai parcours « je veux ce Dofus » : l'objet est donné par le succès 922, dont les objectifs sont six autres succès, qui mènent à la quête 1329.
+
+Fixtures versionnées dans `tests/fixtures/` : `item-15235-dotruche.json` (14 Ko), `quest-1329-le-dofus-des-glaces.json` (125 Ko), `item-7043-dofus-des-glaces.json` (138 Ko). `tests/fixtures.test.ts` charge chacune, valide son schéma et vérifie qu'elle est fermée.
+
+**Vérifications sur 1329.** 28 prérequis `Qf` directs et un groupe `|` de 3 (710, 711, 1316) ✅. **Aucun écart avec DATA_SOURCES §5** : les 20 vecteurs relevés dans le cache tiers de février 2026 sont identiques, caractère pour caractère, au snapshot 3.6.11.15.
+
+## 16. Clôture de M1
+
+**⚠️ restants.**
+
+- Sens de la plupart des clés de critères hors table §4 (`Ef`, `EH`, `BI`, `EB`, `Ob`, `SH`, `Nf`, clés d'objets…) et de l'opérateur `E`.
+- Valeurs de `quests.repeatType` (−1, 0, 1, 2, 3) et de `quests.type` (0 à 3) : sens à établir.
+- `parameter0` des objectifs de type 0 (texte libre) et `parameter4` du type 16 : opaques.
+- Types d'objectifs 10, 11, 15 : jamais échantillonnés en détail (compilés en `other`).
+- Motifs d'URL du site dofusdb.fr (§2.6) : à vérifier par Marc dans un navigateur.
+- 322 objectifs de succès absents en amont ; 3 objets, 12 monstres et 22 PNJ cités mais introuvables (liste dans le rapport).
+
+**Q1 — succès liés au compte.** Le champ `accountLinked` existe mais vaut `false` sur les 2 780 succès. Les données ne distinguent donc aucun succès de compte : on stocke toutes les coches de succès **par personnage** (SPEC §8 inchangée). À rouvrir si une version du jeu renseigne le champ.
+
+**Q3 — quêtes répétables et événementielles.** Sur 1 976 quêtes : `isEvent: true` sur **579** (29 %) ; `repeatType ≠ 0` sur **608** (3 : 377, 1 : 140, −1 : 72, 2 : 19) ; la catégorie « Almanax » en compte 390 à elle seule ; `isPartyQuest` sur 167. Proposition : ne jamais proposer ces quêtes comme objectifs du catalogue et les masquer par défaut dans la saisie en masse, mais **ne pas les exclure des plans** : si un critère les exige, elles doivent apparaître. Le rapport M2 dira combien de plans « Dofus » en traversent.
+
+**Propositions d'ajustement de la SPEC avant M2** (en plus de §13) :
+
+1. §5 `Quest.rewards` : les récompenses dépendent du niveau du personnage (une ligne par niveau, fusionnées en `rewardBands`). La simulation d'inventaire (§6.6) doit choisir la tranche selon `Character.level`, et prendre le minimum garanti quand le niveau n'est pas renseigné.
+2. §6.4 : racines d'un objectif objet = `questsThatReward` ∪ `achievementsThatReward`. 22 des 25 Dofus du catalogue passent par un succès.
+3. §6.2 : les succès « chapeau » (`OA=` vers d'autres succès, `Qf=` vers des quêtes) sont des nœuds à part entière : 5 392 objectifs de succès sont de cette forme. Un succès dont tous les objectifs sont `Qf`/`OA` est entièrement déductible (§6.3).
+4. §6.1 : `CriterionAtom.args` est `(number | string)[]`, sans limite de nombre.
+5. §5 `Objective` : variantes `bringSoul` et `craft` ajoutées ; `killMonster` porte `mapId` et `dungeonIds` ; chaque objectif garde `id` et `text` (texte du jeu avec balises `{npc,id}`…). 36,6 % des objectifs sont de type 0 (texte libre) et restent `other`.
+6. §6.6 donjons : le lien vient de `objective.dungeonIds` (donnée amont) plutôt que d'une déduction par monstre.
+7. §11 poids : 835 Ko gzip pour tout le dataset (55 % de la cible) ; un découpage n'est pas nécessaire au MVP.

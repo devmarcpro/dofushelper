@@ -21,7 +21,7 @@
     "data:snapshot": "tsx scripts/snapshot/main.ts",
     "data:build": "tsx scripts/build-data/main.ts",
     "data:report": "tsx scripts/build-data/report.ts",
-    "data:fixture": "node scripts/not-implemented.mjs data:fixture"
+    "data:fixture": "tsx scripts/build-data/fixture.ts"
   },
   "dependencies": {
     "@preact/signals": "2.11.2",

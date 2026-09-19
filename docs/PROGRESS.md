@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**M1-2 — Client de snapshot : terminée (2026-09-19).** Snapshot complet `3.6.11.15` dans `data/raw/` (364 requêtes au total, aucun 429). Blocage licence levé : Marc confirme l'accord de l'équipe DofusDB. Prochaine étape : M1-4 (compilation v0 et rapport), puis M1-5.
+**Jalon M1 terminé (2026-09-19)** : M1-2, M1-4 et M1-5 faites en mode boucle après confirmation de l'accord DofusDB. Prochaine action : **revue de fin de jalon M1** (mot-clé « revue »), puis M2 (moteur). Rien n'a été poussé.
 
 ## Étapes
 
@@ -14,8 +14,8 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M1-1 — Exploration de l'API DofusDB (60 requêtes max) · 2026-09-18 · 56 requêtes · `DATA_NOTES.md` v0.1
 - [x] M1-2 — Client de snapshot · 2026-09-19 · commits `4e72b59` et suivant · snapshot `3.6.11.15`
 - [x] M1-3 — Parseur syntaxique des critères (sans réseau) · 2026-09-18 · commit `5a6ba9d`
-- [ ] M1-4 — Compilation v0 et rapport
-- [ ] M1-5 — Tranches verticales et fixtures
+- [x] M1-4 — Compilation v0 et rapport · 2026-09-19 · commits `70b9a26`, `14419ae` · 100 % des critères analysés, dataset 835 Ko gzip
+- [x] M1-5 — Tranches verticales et fixtures · 2026-09-19 · Dotruche (5 nœuds), quête 1329, Dofus des Glaces (50 nœuds)
 - [ ] Revue de fin de jalon M0, puis M1
 
 ## Décisions de Marc
@@ -70,9 +70,19 @@ Restent à Marc : contrôle visuel à 380 px, premier `git push`, réglages GitH
 - Table `scripts/build-data/objective-types.ts` : position des ids dans les paramètres d'objectifs, tirée de DATA_NOTES §4.
 - Attribution LPNC-IA ajoutée au pied de page et au README. **Reste à Marc : choisir une licence de dépôt compatible (non commerciale, partage à l'identique).**
 
+## Décisions techniques prises en M1-4 et M1-5 (carte blanche)
+
+- Dataset v0 : chaque critère est stocké brut + AST (`{ raw, ast, error? }`). Types dans `src/core/types.ts` et `src/core/dataset.ts`. Sortie déterministe (`stable-json.ts`), validation de schéma maison (`validate.ts`), sans dépendance.
+- Récompenses d'étape fusionnées en tranches de niveau (`rewardBands`) ; la récompense de quête agrège le maximum par objet.
+- `isQuestItem` = super-type « Objet de quête », résolu par nom dans `item-super-types`, surchargeable par `data/overrides/items.json`.
+- `data/overrides/*.json` créés vides ; `data:build` échoue si un override vise un id absent ou n'a pas `reason` et `source`.
+- `data:fixture` lit `public/data/` ; `--catalog` imprime le tableau des plans. Fermeture des prérequis dans `scripts/build-data/subgraph.ts` (provisoire : le vrai graphe arrive en M2 dans `src/core`).
+- Écarts assumés avec la SPEC, listés dans `DATA_NOTES.md` §13 et §16 : **Marc doit les reporter dans `docs/SPEC.md`** (l'agent ne modifie pas la SPEC).
+
 ## Notes de reprise
 
-- Environnement : Windows 11, Node 24.14, npm 11.11, git 2.52. Le dossier local s'appelle « dofus helper » ; le dépôt GitHub s'appelle `dofushelper` (base Vite de M0-2 : `/dofushelper/`).
-- `npm run typecheck && npm run lint && npm test && npm run build` : tous verts au 2026-09-18.
-- Les scripts `data:*` sortent en code 1 avec « pas encore implémenté (jalon M1) ».
-- Aucun `git push` n'a été fait : le dépôt distant est vide.
+- Environnement : Windows 11, Node 24.14, npm 11.11, git 2.52. Dossier local « dofus helper », dépôt GitHub `dofushelper` (base Vite `/dofushelper/`).
+- `npm run typecheck && npm run lint && npm test && npm run build` : verts au 2026-09-19 (151 tests).
+- Snapshot brut `data/raw/3.6.11.15/` (165 Mo, gitignored). `npm run data:build` puis `npm run data:report` le recompilent sans réseau. `npm run data:snapshot` ne refait qu'un appel à `/version` tant que la version du jeu ne change pas.
+- Dataset compilé versionné dans `public/data/` ; rapport dans `docs/reports/data-report-3.6.11.15.md`.
+- Aucun `git push` n'a été fait. Restent à Marc : premier push, réglages GitHub Pages, contrôle visuel à 380 px, licence du dépôt compatible LPNC-IA, vérification des URL du site DofusDB, report des propositions dans la SPEC.
