@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**Jalon M2 terminé (2026-09-19).** Moteur complet dans `src/core` : critères → `Requirement`, graphe, progression effective, résolution avec points de choix, besoins et conditions, façade `createEngine`. Dataset au format 1. Prochaine étape : **M3 (interface MVP)**, feuille de route `docs/prompts/M3.md`, étape M3-1 (état et persistance). Tout est poussé sur `origin/main` ; la CI GitHub est verte ; `deploy` attend que Marc active Pages (Settings → Pages → Source « GitHub Actions »).
+**Jalon M2 terminé (2026-09-19).** Moteur complet dans `src/core` : critères → `Requirement`, graphe, progression effective, résolution avec points de choix, besoins et conditions, façade `createEngine`. Dataset au format 1. Prochaine étape : **M3 (interface MVP)**, feuille de route `docs/prompts/M3.md`, étape M3-2 (dataset, routeur, coquille) ; M3-1 terminée. Tout est poussé sur `origin/main` ; la CI GitHub est verte ; `deploy` attend que Marc active Pages (Settings → Pages → Source « GitHub Actions »).
 
 ## Étapes
 
@@ -23,7 +23,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M2-4 — Besoins et conditions · 2026-09-19 · simulation d'inventaire, tranches de niveau, monstres, donjons, conditions
 - [x] M2-5 — Intégration au dataset et test de fumée · 2026-09-19 · 4 781 objectifs résolus, buildGraph 56 ms, resolve 0,28 ms en moyenne, oracle `need` identique à 92 %
 - [x] Revue de fin de jalon M2 · 2026-09-19 · 5 critères sur 5 (SPEC §12)
-- [ ] M3-1 — État, persistance, migrations, export/import, undo (`src/state`)
+- [x] M3-1 — État, persistance, migrations, export/import, undo (`src/state`) · 2026-09-19 · pur, testé sans DOM
 - [ ] M3-2 — Chargement du dataset, routeur, coquille de l'application
 - [ ] M3-3 — Personnages et catalogue d'objectifs
 - [ ] M3-4 — Écran plan : marche à suivre et choix
