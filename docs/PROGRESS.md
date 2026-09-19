@@ -4,7 +4,9 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**Jalon M2 terminé (2026-09-19).** Moteur complet dans `src/core` : critères → `Requirement`, graphe, progression effective, résolution avec points de choix, besoins et conditions, façade `createEngine`. Dataset au format 1. Prochaine étape : **M3 (interface MVP)**, feuille de route `docs/prompts/M3.md`, étape M3-2 (dataset, routeur, coquille) ; M3-1 terminée. Tout est poussé sur `origin/main` ; la CI GitHub est verte ; `deploy` attend que Marc active Pages (Settings → Pages → Source « GitHub Actions »).
+**Jalon M3 terminé (2026-09-19) : MVP fonctionnel.** Interface complète sur le moteur : coquille, routeur hash, personnages, catalogue, accueil, plan en quatre onglets, fiches, persistance, export/import, undo, frontière d'erreur. 287 tests verts, JS initial 26 Ko gzip. Tout est poussé sur `origin/main`. Prochaine étape : M4 (confort), à cadrer dans `docs/prompts/M4.md`.
+
+**Deux vérifications que seul Marc peut faire** : (1) activer GitHub Pages (Settings → Pages → Source « GitHub Actions ») pour que `deploy` publie le site ; (2) regarder le site à 380 px de large dans un vrai navigateur (`npm run dev`) : l'agent n'a qu'un DOM simulé, il a vérifié le rendu, les interactions et l'absence de largeur fixe, pas l'aspect visuel.
 
 ## Étapes
 
@@ -24,12 +26,12 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M2-5 — Intégration au dataset et test de fumée · 2026-09-19 · 4 781 objectifs résolus, buildGraph 56 ms, resolve 0,28 ms en moyenne, oracle `need` identique à 92 %
 - [x] Revue de fin de jalon M2 · 2026-09-19 · 5 critères sur 5 (SPEC §12)
 - [x] M3-1 — État, persistance, migrations, export/import, undo (`src/state`) · 2026-09-19 · pur, testé sans DOM
-- [ ] M3-2 — Chargement du dataset, routeur, coquille de l'application
-- [ ] M3-3 — Personnages et catalogue d'objectifs
-- [ ] M3-4 — Écran plan : marche à suivre et choix
-- [ ] M3-5 — Écran plan : à réunir et conditions ; fiche quête/succès
-- [ ] M3-6 — Accessibilité, 380 px, poids du JS, frontière d'erreur
-- [ ] Revue de fin de jalon M3
+- [x] M3-2 — Chargement du dataset, routeur, coquille · 2026-09-19 · un seul point d'appel réseau (`src/data/load.ts`), fichiers demandés avec leur hash de l'application
+- [x] M3-3 — Personnages et catalogue d'objectifs · 2026-09-19
+- [x] M3-4 — Écran plan : marche à suivre et choix · 2026-09-19 · message « N étapes prérequises marquées comme faites · Annuler »
+- [x] M3-5 — Écran plan : à réunir et conditions ; fiche quête/succès · 2026-09-19 · aucun lien sortant tant que les URL DofusDB ne sont pas vérifiées
+- [x] M3-6 — Accessibilité, 380 px, poids du JS, frontière d'erreur · 2026-09-19 · 26 Ko gzip ; contrôle visuel à faire par Marc
+- [x] Revue de fin de jalon M3 · 2026-09-19 · parcours P1 à P7 couverts par le test d'interface, sauf l'aspect visuel
 
 ## Décisions de Marc
 
@@ -102,6 +104,17 @@ Marc ne veut plus de questions en fin de tour : l'agent décide, agit et consign
 4. **Feuille de route M2** : `docs/prompts/M2.md`, cinq étapes puis revue.
 5. **Nettoyage de la revue M1** : `scripts/not-implemented.mjs` supprimé, README mis à jour. Le niveau des monstres (`grades`) sera ajouté au snapshot quand M2-4 en aura besoin.
 6. **SPEC** : l'agent ne la modifie toujours pas ; les écarts sont dans `DATA_NOTES.md` §13 et §16.
+
+## Décisions techniques prises en M3 (carte blanche)
+
+- `src/state` : actions pures, `ProgressStore` en interface (localStorage injecté, mémoire pour les tests), écriture différée de 300 ms vidée à `pagehide`. Un état illisible n'est jamais écrasé : l'écran propose le téléchargement du contenu brut avant toute remise à zéro.
+- `src/ui/store.ts` est le seul endroit qui touche `localStorage`, l'horloge et le hash. Le moteur est recalculé à chaque changement ; rien de dérivé n'est stocké (vérifié par test).
+- Textes dans `src/ui/strings.fr.ts` : toute phrase à trou est une fonction, avec gestion du pluriel.
+- Un plan s'affiche même sans personnage (profil anonyme, cases désactivées).
+- Onglets du plan = liens hash (`#/plan/item-7043/gather`) : l'état d'écran survit au rechargement et au partage d'URL.
+- Test d'interface dans un DOM simulé (`happy-dom`, devDependency) sur la fixture réelle du Dofus des Glaces.
+- Pas de lien sortant vers dofusdb.fr tant que Marc n'a pas vérifié les motifs d'URL (DATA_SOURCES §2.6).
+- Écarts assumés avec SPEC §9 : l'onglet catalogue ne propose que « Dofus » (succès et quêtes en M4) ; la provenance liste au plus six monstres par objet.
 
 ## Notes de reprise
 

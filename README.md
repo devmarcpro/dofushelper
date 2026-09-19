@@ -8,6 +8,10 @@ Aucune interaction avec le jeu, aucun compte : la progression est saisie à la m
 
 Dofus est une marque d'Ankama. Site non officiel, sans lien avec Ankama.
 
+## État
+
+MVP fonctionnel : personnages multiples, catalogue des Dofus, plan d'un objectif en quatre onglets (marche à suivre, à réunir, conditions, choix), fiches quête et succès, progression enregistrée dans le navigateur, export et import, annulation. Le moteur (`src/core`) est pur et testé sur l'ensemble du dataset.
+
 ## Commandes
 
 ```bash
