@@ -7,7 +7,9 @@ export const fr = {
     underConstructionDetail: 'Le site est en cours de développement. Rien à voir pour le moment.',
   },
   footer: {
-    dataCredit: 'Données de jeu : DofusDB.',
+    // Wording required verbatim by the DofusDB API license (LPNC-IA 1.0, §3.1).
+    dataCredit: 'Données issues de DofusDB. Utilisation soumise à la LPNC-IA 1.0.',
+    dataCreditUrl: 'https://dofusdb.fr',
     trademark: 'Dofus est une marque d’Ankama. Site non officiel, sans lien avec Ankama.',
     repository: 'Code source',
     repositoryUrl: 'https://github.com/devmarcpro/dofushelper',

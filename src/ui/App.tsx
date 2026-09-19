@@ -16,7 +16,11 @@ export function App() {
         </section>
       </main>
       <footer class="footer">
-        <p>{fr.footer.dataCredit}</p>
+        <p>
+          <a href={fr.footer.dataCreditUrl} rel="noopener noreferrer">
+            {fr.footer.dataCredit}
+          </a>
+        </p>
         <p>{fr.footer.trademark}</p>
         <p>
           <a href={fr.footer.repositoryUrl} rel="noopener noreferrer">

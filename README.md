@@ -4,6 +4,8 @@ Site compagnon pour **Dofus 3**, 100 % statique. Tu choisis un objectif (un Dofu
 
 Aucune interaction avec le jeu, aucun compte : la progression est saisie à la main et reste dans ton navigateur. Les données de jeu viennent d'un snapshot [DofusDB](https://dofusdb.fr) compilé hors ligne.
 
+**Données issues de DofusDB. Utilisation soumise à la LPNC-IA 1.0.** (licence de l'API : non commerciale, attribution, partage à l'identique ; texte sur https://api.dofusdb.fr/). L'équipe DofusDB a donné son accord à Marc pour ce projet et son mode de développement (septembre 2026).
+
 Dofus est une marque d'Ankama. Site non officiel, sans lien avec Ankama.
 
 ## Commandes
