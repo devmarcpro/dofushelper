@@ -19,7 +19,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "data:snapshot": "tsx scripts/snapshot/main.ts",
-    "data:build": "node scripts/not-implemented.mjs data:build",
+    "data:build": "tsx scripts/build-data/main.ts",
     "data:report": "node scripts/not-implemented.mjs data:report",
     "data:fixture": "node scripts/not-implemented.mjs data:fixture"
   },

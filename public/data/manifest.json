@@ -1,0 +1,44 @@
+{
+  "format": 0,
+  "gameVersion": "3.6.11.15",
+  "lang": "fr",
+  "builtAt": "2026-09-19T08:09:52.211Z",
+  "attribution": "Données issues de DofusDB. Utilisation soumise à la LPNC-IA 1.0.",
+  "files": [
+    {
+      "file": "quests.json",
+      "bytes": 3679893,
+      "sha256": "481b68cd27989b6968f40a4fbdf8ded641e8cd89b6a3e4d9e5d5f5e874d8d4cf"
+    },
+    {
+      "file": "achievements.json",
+      "bytes": 2526978,
+      "sha256": "733aa608af1c7e8ee13acf5effdbcfc2111e9c27d914603dc3b0d1f3ea5eef18"
+    },
+    {
+      "file": "items.json",
+      "bytes": 940131,
+      "sha256": "279e35ea45b5e524397d2a9663be874136689f6807da8f3a6a82905065030812"
+    },
+    {
+      "file": "monsters.json",
+      "bytes": 485997,
+      "sha256": "facd6f71efbd94a613ed251417a94a566fad69961456036660a2c19db7b9efcb"
+    },
+    {
+      "file": "dungeons.json",
+      "bytes": 30218,
+      "sha256": "5c1a0d91a466206f0703d50c02bf57597f930cba33085fd68dce3f2cb16cd5d8"
+    },
+    {
+      "file": "refs.json",
+      "bytes": 112984,
+      "sha256": "faa4adfac65eae902720237ae1f1f02e7e1afe55d0c9e9b891bcecd600b9de2a"
+    },
+    {
+      "file": "goals.json",
+      "bytes": 2919,
+      "sha256": "c4ded25dd0f1663355dd5fef3b93078137b8274225d5428b4fa98213d3740c2f"
+    }
+  ]
+}
