@@ -48,3 +48,21 @@ export interface Reward {
   emotes: number[];
   spells: number[];
 }
+
+/** 1 Bonta, 2 Brâkmar; 0 is the neutral side (the game writes it "Ps!1&Ps!2" in criteria). */
+export type AlignmentSide = 0 | 1 | 2;
+
+/** Boolean expression derived from a game criterion (SPEC §5). */
+export type Requirement =
+  | { t: 'all'; of: Requirement[] } // `all` of nothing is "always true" (the game's BT=1)
+  | { t: 'any'; of: Requirement[] }
+  | { t: 'not'; of: Requirement }
+  | { t: 'questDone'; id: QuestId }
+  | { t: 'achievementDone'; id: AchievementId }
+  | { t: 'level'; min: number } // "PL>109" → min = 110
+  | { t: 'jobLevel'; jobId: JobId; min: number }
+  | { t: 'alignment'; side: AlignmentSide }
+  | { t: 'breed'; id: BreedId }
+  | { t: 'hasItem'; itemId: ItemId; qty: number }
+  | { t: 'context'; key: string; raw: string } // true in game, but a plan cannot drive it
+  | { t: 'unknown'; raw: string }; // not interpreted: never blocking, always displayable

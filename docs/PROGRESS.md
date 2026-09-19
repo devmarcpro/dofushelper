@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**Jalon M2 en cours (moteur).** Feuille de route : `docs/prompts/M2.md`, écrite par l'agent sous carte blanche. Étape courante : M2-1 (étage sémantique du parseur). M0 et M1 sont terminés ; premier `git push` fait par l'agent le 2026-09-19 sur délégation de Marc.
+**Jalon M2 en cours (moteur).** Feuille de route : `docs/prompts/M2.md`, écrite par l'agent sous carte blanche. Étape courante : M2-2 (graphe et progression effective) ; M2-1 terminée. M0 et M1 sont terminés ; premier `git push` fait par l'agent le 2026-09-19 sur délégation de Marc.
 
 ## Étapes
 
@@ -17,7 +17,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M1-4 — Compilation v0 et rapport · 2026-09-19 · commits `70b9a26`, `14419ae` · 100 % des critères analysés, dataset 835 Ko gzip
 - [x] M1-5 — Tranches verticales et fixtures · 2026-09-19 · Dotruche (5 nœuds), quête 1329, Dofus des Glaces (50 nœuds)
 - [x] Revue de fin de jalon M0 et M1 · 2026-09-19 · M1 : 4 critères sur 4 ; M0 : CI à constater après le push
-- [ ] M2-1 — Étage sémantique du parseur (`toRequirement`)
+- [x] M2-1 — Étage sémantique du parseur (`toRequirement`) · 2026-09-19 · 20 vecteurs réels avec attendus écrits à la main
 - [ ] M2-2 — Graphe et progression effective
 - [ ] M2-3 — Résolution, points de choix, ordonnancement
 - [ ] M2-4 — Besoins et conditions
