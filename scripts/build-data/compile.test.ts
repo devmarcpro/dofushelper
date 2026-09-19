@@ -385,6 +385,75 @@ describe('overrides', () => {
     expect(dataset.items.find((i) => i.id === 9100002)?.isQuestItem).toBe(true);
   });
 
+  it('applies removeRequires and addRequires to the compiled requirement, keeping the raw string', () => {
+    const { dataset, errors, obsoleteOverrides } = compileDataset(
+      fakeRaw(),
+      {
+        quests: {
+          '9000002': {
+            ...meta,
+            removeRequires: ['Qf=9000003'],
+            addRequires: [
+              { t: 'questDone', id: 9000001 },
+              { t: 'level', min: 30 },
+            ],
+          },
+        },
+        achievements: {
+          '9000201': {
+            ...meta,
+            addRequires: [{ t: 'questDone', id: 9000001 }],
+            flags: { note: 'FAKE note' },
+          },
+        },
+        items: {},
+      },
+      'fr',
+    );
+    expect(errors).toEqual([]);
+    const quest = dataset.quests.find((q) => q.id === 9000002);
+    expect(quest?.start.raw).toBe('PL>9&(Qf=9000001|Qf=9000003)');
+    expect(quest?.start.req).toEqual({
+      t: 'all',
+      of: [
+        { t: 'level', min: 10 },
+        { t: 'questDone', id: 9000001 },
+        { t: 'level', min: 30 },
+      ],
+    });
+    // Qf=9000001 was already required once the other branch was removed: reported as obsolete.
+    expect(obsoleteOverrides).toEqual([
+      'overrides/quests.json, quête 9000002 : {"t":"questDone","id":9000001} à ajouter est déjà exigé par le jeu',
+    ]);
+    const added = dataset.achievements[0]?.objectives.at(-1);
+    expect(added).toEqual({
+      id: -1,
+      name: 'FAKE note',
+      order: null,
+      criterion: { raw: '', req: { t: 'questDone', id: 9000001 } },
+    });
+  });
+
+  it('reports a removal that no longer matches, and fails on an invalid addition', () => {
+    const { errors, obsoleteOverrides } = compileDataset(
+      fakeRaw(),
+      {
+        quests: {
+          '9000002': { ...meta, removeRequires: ['Qf=9077777'], addRequires: [{ t: 'nope' }] },
+        },
+        achievements: {},
+        items: {},
+      },
+      'fr',
+    );
+    expect(obsoleteOverrides).toEqual([
+      "overrides/quests.json, quête 9000002 : « Qf=9077777 » à retirer n'apparaît plus dans le critère du jeu",
+    ]);
+    expect(errors).toEqual([
+      'overrides/quests.json, quête 9000002 : addRequires contient une entrée invalide {"t":"nope"}',
+    ]);
+  });
+
   it('fails when an override targets an id absent from the snapshot', () => {
     const { errors } = compileDataset(
       fakeRaw(),

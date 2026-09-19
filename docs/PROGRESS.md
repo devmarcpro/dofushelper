@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**Jalon M4 terminé (2026-09-19) : confort.** Recherche globale, catalogue à trois onglets (Dofus, Succès, Quêtes), saisie rapide par catégorie en une action annulable. **Le site est en ligne** : https://devmarcpro.github.io/dofushelper/ (Marc a activé GitHub Pages ; `ci` et `deploy` verts). Prochaine étape : M5 (finitions : overrides outillés, liens soluces si accord, PWA hors ligne, passe accessibilité et performance), à cadrer dans `docs/prompts/M5.md`.
+**Jalon M5 terminé (2026-09-19) : finitions.** Hors ligne par service worker écrit à la main, manifeste d'application et icône originale ; overrides réellement appliqués (`removeRequires`, `addRequires`) et rapport des overrides devenus inutiles ; passe accessibilité avec contrastes calculés. **Tous les jalons de SPEC §12 (M0 à M5) sont livrés.** Site en ligne : https://devmarcpro.github.io/dofushelper/. La suite n'est plus une feuille de route mais de l'usage réel : retours de Marc, premiers overrides, mise à jour du snapshot quand la version du jeu change (`npm run data:snapshot`, puis `data:build` et `data:report`).
 
 **Reste à Marc** : regarder le site en ligne sur téléphone (380 px) ; vérifier dans un navigateur les motifs d'URL des pages DofusDB (DATA_SOURCES §2.6) pour débloquer les liens sortants ; reporter dans `docs/SPEC.md` les écarts listés dans `DATA_NOTES.md` §13 et §16.
 
@@ -36,6 +36,10 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M4-2 — Catalogue : succès et quêtes · 2026-09-19
 - [x] M4-3 — Saisie rapide par catégorie · 2026-09-19 · action `setManyNodesDone`, un seul undo
 - [x] Revue de fin de jalon M4 · 2026-09-19 · fiches navigables déjà livrées en M3-5
+- [x] M5-1 — Hors ligne (PWA) · 2026-09-19 · `public/sw.js`, même origine uniquement, stratégie testée
+- [x] M5-2 — Overrides outillés · 2026-09-19 · appliqués au build, entrée invalide = échec, overrides inutiles listés au rapport
+- [x] M5-3 — Passe accessibilité et performance · 2026-09-19 · contrastes ≥ 5,6:1 en clair et en sombre, JS initial 29 Ko gzip
+- [x] Revue de fin de jalon M5 · 2026-09-19 · liens soluces hors périmètre tant que l'accord de l'auteur du mapping manque (D6)
 
 ## Décisions de Marc
 
@@ -119,6 +123,14 @@ Marc ne veut plus de questions en fin de tour : l'agent décide, agit et consign
 - Test d'interface dans un DOM simulé (`happy-dom`, devDependency) sur la fixture réelle du Dofus des Glaces.
 - Pas de lien sortant vers dofusdb.fr tant que Marc n'a pas vérifié les motifs d'URL (DATA_SOURCES §2.6).
 - Écarts assumés avec SPEC §9 : l'onglet catalogue ne propose que « Dofus » (succès et quêtes en M4) ; la provenance liste au plus six monstres par objet.
+
+## Décisions techniques prises en M4 et M5 (carte blanche)
+
+- Recherche : index pur (`src/ui/search.ts`), 2,5 ms sur 4 781 entrées. Succès et quêtes du catalogue passent par la recherche, pas par une liste complète.
+- Saisie rapide : `setManyNodesDone` = un seul changement d'état, donc un seul undo.
+- Service worker sans dépendance ni liste de précache : navigation et `data/manifest.json` en réseau d'abord, fichiers hashés en cache d'abord, requêtes d'une autre origine jamais interceptées. Nom de cache `roadbook-v1` : l'incrémenter purge les anciens fichiers. Enregistré en production seulement.
+- Overrides : `removeRequires` retire des atomes du critère brut avant compilation (la chaîne du jeu reste affichée telle quelle) ; `addRequires` n'accepte que des feuilles simples validées ; sur un succès, un ajout devient un objectif supplémentaire d'id négatif.
+- Accessibilité : contrastes calculés (clair : 5,6 à 17,2 ; sombre : 7,5 à 15,9) ; plus d'opacité sur les étapes faites.
 
 ## Notes de reprise
 

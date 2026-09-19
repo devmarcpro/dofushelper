@@ -392,9 +392,11 @@ fieldset.card {
   background: var(--color-surface);
 }
 
+/* Done steps recede without losing contrast: no opacity, which would push muted text under AA. */
 .step--done,
 .step--implied {
-  opacity: 0.75;
+  background: transparent;
+  border-style: dashed;
 }
 
 .step--available {

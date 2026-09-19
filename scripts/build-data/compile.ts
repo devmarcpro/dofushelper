@@ -3,7 +3,12 @@
  * No file system, no clock: deterministic by construction. Unexpected shapes never throw
  * (golden rule 7): they are skipped and reported in `warnings`.
  */
-import { compileCriterion } from '../../src/core/criterion';
+import {
+  compileCriterion,
+  compileCriterionWithOverride,
+  parseRequirementLeaf,
+  type OverrideOutcome,
+} from '../../src/core/criterion';
 import type {
   CompiledAchievement,
   CompiledDataset,
@@ -40,6 +45,8 @@ export interface CompileResult {
   errors: string[];
   /** Non fatal oddities, listed by data:report. */
   warnings: string[];
+  /** Overrides that no longer change anything: the upstream data was fixed (SPEC §7). */
+  obsoleteOverrides: string[];
 }
 
 type Obj = Record<string, unknown>;
@@ -83,6 +90,24 @@ export function compileDataset(
 ): CompileResult {
   const errors: string[] = [];
   const warnings: string[] = [];
+  const obsoleteOverrides: string[] = [];
+
+  /** Turns the outcome of an override into build errors and obsolete-override notes. */
+  const recordOutcome = (where: string, outcome: OverrideOutcome): void => {
+    for (const bad of outcome.invalidAdditions) {
+      errors.push(`${where} : addRequires contient une entrée invalide ${JSON.stringify(bad)}`);
+    }
+    for (const atom of outcome.unusedRemovals) {
+      obsoleteOverrides.push(
+        `${where} : « ${atom} » à retirer n'apparaît plus dans le critère du jeu`,
+      );
+    }
+    for (const leaf of outcome.redundantAdditions) {
+      obsoleteOverrides.push(
+        `${where} : ${JSON.stringify(leaf)} à ajouter est déjà exigé par le jeu`,
+      );
+    }
+  };
   const table = (name: string): readonly unknown[] => raw.tables[name] ?? [];
   const text = (v: unknown): string => {
     const o = asObj(v);
@@ -207,6 +232,12 @@ export function compileDataset(
     return { items, quests: numList(n.quests), achievements: numList(n.achievements) };
   }
 
+  const compileStart = (id: number, rawCriterion: string) => {
+    const outcome = compileCriterionWithOverride(rawCriterion, overrides.quests[String(id)]);
+    recordOutcome(`overrides/quests.json, quête ${id}`, outcome);
+    return outcome.criterion;
+  };
+
   const quests: CompiledQuest[] = [];
   for (const row of table('quests')) {
     const q = asObj(row);
@@ -269,7 +300,7 @@ export function compileDataset(
       isEvent: asBool(q.isEvent),
       repeatType: asNum(q.repeatType),
       repeatLimit: asNum(q.repeatLimit),
-      start: compileCriterion(typeof q.startCriterion === 'string' ? q.startCriterion : ''),
+      start: compileStart(id, typeof q.startCriterion === 'string' ? q.startCriterion : ''),
       startPositions: asArray(q.startPosition).flatMap((pos) => {
         const o = asObj(pos);
         return o ? [{ mapId: asNum(o.mapId), npcId: asNum(o.npcId) }] : [];
@@ -307,6 +338,44 @@ export function compileDataset(
       ];
     });
     objectives.sort((x, y) => (x.order ?? 0) - (y.order ?? 0) || x.id - y.id);
+    const achievementOverride = overrides.achievements[String(id)];
+    if (achievementOverride) {
+      const where = `overrides/achievements.json, succès ${id}`;
+      const removals = achievementOverride.removeRequires ?? [];
+      const unused = new Set(removals);
+      for (const objective of objectives) {
+        const outcome = compileCriterionWithOverride(objective.criterion.raw, {
+          removeRequires: removals,
+        });
+        objective.criterion = outcome.criterion;
+        for (const atom of removals)
+          if (!outcome.unusedRemovals.includes(atom)) unused.delete(atom);
+      }
+      const already = new Set(objectives.map((o) => JSON.stringify(o.criterion.req)));
+      const additions = (achievementOverride.addRequires ?? []).map((candidate) => ({
+        candidate,
+        leaf: parseRequirementLeaf(candidate),
+      }));
+      recordOutcome(where, {
+        criterion: compileCriterion(''),
+        unusedRemovals: [...unused],
+        redundantAdditions: additions.flatMap((a) =>
+          a.leaf && already.has(JSON.stringify(a.leaf)) ? [a.leaf] : [],
+        ),
+        invalidAdditions: additions.filter((a) => !a.leaf).map((a) => a.candidate),
+      });
+      let added = 0;
+      for (const { leaf } of additions) {
+        if (!leaf || already.has(JSON.stringify(leaf))) continue;
+        added += 1;
+        objectives.push({
+          id: -added,
+          name: achievementOverride.flags?.note ?? 'Prérequis ajouté manuellement',
+          order: null,
+          criterion: { raw: '', req: leaf },
+        });
+      }
+    }
     const embedded = new Set(objectives.map((o) => o.id));
     const reward = emptyReward();
     for (const rawReward of asArray(a.rewards)) {
@@ -555,6 +624,7 @@ export function compileDataset(
     },
     errors,
     warnings,
+    obsoleteOverrides,
   };
 }
 

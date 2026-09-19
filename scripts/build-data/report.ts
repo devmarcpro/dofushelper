@@ -103,7 +103,11 @@ async function main(): Promise<void> {
     versionIndex >= 0 ? (process.argv[versionIndex + 1] ?? null) : null,
   );
   const raw = await loadSnapshot(dir, manifest);
-  const { dataset, errors, warnings } = compileDataset(raw, await loadOverrides(), 'fr');
+  const { dataset, errors, warnings, obsoleteOverrides } = compileDataset(
+    raw,
+    await loadOverrides(),
+    'fr',
+  );
 
   // ---------- Criteria samples per source ----------
   const questStart: CriterionSample[] = dataset.quests.map((q) => ({
@@ -291,6 +295,10 @@ async function main(): Promise<void> {
   for (const e of errors) lines.push(`- **ERREUR** ${e}`);
   for (const w of warnings) lines.push(`- ${w}`);
   lines.push('');
+
+  lines.push('## 6 bis. Overrides devenus inutiles', '');
+  if (obsoleteOverrides.length === 0) lines.push('Aucun.', '');
+  else lines.push(...obsoleteOverrides.map((o) => `- ${o}`), '');
 
   // ---------- File weights ----------
   lines.push(

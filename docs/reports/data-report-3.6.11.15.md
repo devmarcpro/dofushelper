@@ -339,6 +339,10 @@ Comparaison, nœud par nœud, entre nos prérequis directs (arêtes obligatoires
 - objet Dofus 29135 « Dofus Verdoyant » sans source : absent du catalogue
 - objet Dofus 30356 « Jyfus » sans source : absent du catalogue
 
+## 6 bis. Overrides devenus inutiles
+
+Aucun.
+
 ## 7. Poids des fichiers de `public/data/`
 
 | Fichier | Brut (octets) | gzip (octets) |
