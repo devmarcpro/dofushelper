@@ -11,7 +11,9 @@ Chaque réponse porte l'en-tête `x-license: LPNC-IA 1.0 / NCPUL-AI 1.0 - https:
 - **Non commercial** strict (pas de publicité, d'abonnement, de vente).
 - **Restrictions liées à l'IA (§4.2)** : l'usage ponctuel d'outils d'IA est toléré si l'utilisateur reste « l'auteur principal et responsable du Projet ». Sont interdits : un projet « dont la structure, le code, le contenu ou la logique a été produit en majorité (plus de 50 %) par des outils d'IA » ; « intégrer l'API dans un pipeline automatisé piloté par l'IA sans intervention humaine significative » ; « rendre les données disponibles à tout système d'IA, agent autonome ou bot ». Résiliation automatique en cas de violation, avec obligation de supprimer les données.
 
-**Conséquence** : le mode de travail actuel (code écrit par un agent IA, exploration exécutée par cet agent) est en dehors du champ de cette licence. Toute activité réseau vers DofusDB est suspendue jusqu'à décision de Marc (voir « Propositions » §13). Le cache `data/raw/_explore/` est conservé localement pour cette décision ; il n'est pas versionné.
+**Levée du blocage (2026-09-19)** : Marc a écrit à l'équipe DofusDB et confirme avoir leur accord pour ce projet et son mode de développement. L'attribution exigée figure dans le pied de page et le README. Le texte ci-dessous est conservé pour mémoire.
+
+**Conséquence (au 2026-09-18)** : le mode de travail actuel (code écrit par un agent IA, exploration exécutée par cet agent) est en dehors du champ de cette licence. Toute activité réseau vers DofusDB est suspendue jusqu'à décision de Marc (voir « Propositions » §13). Le cache `data/raw/_explore/` est conservé localement pour cette décision ; il n'est pas versionné.
 
 ## 1. `/version`
 
@@ -139,3 +141,30 @@ Renvoie un tableau JSON : `[["Niveau > ", "29"], "&", ["Niveau de ", {JobData 26
 7. **§5 `Quest`** : `isRepeatable` ← `repeatType`/`repeatLimit` (sens à établir), `isEvent` disponible (Q3), `startPosition` utile pour « où commencer ».
 8. **`AlignmentSide`** : le jeu a un id 0 « Neutre » et un 3 « Mercenaire » ; garder 0/1/2 dans le moteur, traiter 3 en `context`.
 9. **Snapshot** : préférer les objets embarqués (moins de requêtes) et `$select` sur les champs utiles ; échantillonner d'abord le poids d'une page pleine.
+
+## 14. Premier snapshot complet (M1-2, 2026-09-19)
+
+Version `3.6.11.15` · `data/raw/3.6.11.15/` (gitignored) · 165 Mo bruts · **364 requêtes réseau au total** (12 de dry-run, 6 d'essai, 329 pour le snapshot, 17 pour le correctif des recettes), aucune reprise, aucun 429. Une seconde exécution ne fait que `/version`.
+
+| Ressource | Lignes | Réponses | Poids brut |
+|---|---:|---:|---:|
+| quests (étapes, objectifs, récompenses embarqués) | 1 976 | 40 | 56 Mo |
+| achievements (objectifs, récompenses embarqués) | 2 780 | 56 | 86 Mo |
+| items référencés | 3 834 | 77 | 4,6 Mo |
+| dofus-items (type 23) | 34 | 1 | 41 Ko |
+| recipes (objets fabricables) | 601 | 13 | — |
+| ingredient-items (non déjà référencés) | 121 | 3 | 47 Ko |
+| monsters référencés (objectifs, succès, donjons, drops) | 2 151 | 44 | 12 Mo |
+| npcs référencés (noms) | 2 476 | 50 | 0,4 Mo |
+| subareas référencées | 189 | 4 | 48 Ko |
+| dungeons | 187 | 4 | 94 Ko |
+| item-types | 239 | 5 | 116 Ko |
+| quest-categories · achievement-categories | 43 · 134 | 1 · 3 | — |
+| quest-objective-types · item-super-types · jobs · breeds · alignment-sides | 18 · 26 · 23 · 19 · 4 | 1 chacun | — |
+
+Constats :
+
+1. **`items.recipeIds` liste les recettes qui UTILISENT l'objet**, pas celle qui le fabrique (objet 287 « Graine de Sésame » : `hasRecipe: false`, 11 `recipeIds`). L'indicateur « fabricable » est **`hasRecipe`** ; la recette se retrouve par `recipes?resultId=` (l'`id` d'une recette est égal à son `resultId`). Écart avec DATA_SOURCES §2.5.
+2. **322 objectifs de succès embarqués valent `null`** (sur 9 168) ; les mêmes ids demandés à `/achievement-objectives` renvoient `total: 0` : ils n'existent pas en amont. À traiter comme objectifs manquants (`DataIssue`), jamais comme erreur.
+3. Malgré `$select`, l'API ajoute des champs peuplés (`type` et `img` sur les objets ; `ingredients`, `result`, `job` sur les recettes ; `steps` sur les quêtes) : le poids vient de là. `data:build` ne garde que le nécessaire.
+4. Budget : 364 requêtes pour tout le jalon, contre 2 000 autorisées.

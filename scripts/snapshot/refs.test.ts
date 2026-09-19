@@ -126,8 +126,8 @@ describe('collectReferences', () => {
 describe('second wave', () => {
   it('collects drop monsters and items that have a recipe', () => {
     const result = collectFromItems([
-      { id: 9100001, dropMonsterIds: [9300010, 9300011], recipeIds: [] },
-      { id: 9100002, dropMonsterIds: [], recipeIds: [9500001] },
+      { id: 9100001, dropMonsterIds: [9300010, 9300011], recipeIds: [9500002], hasRecipe: false },
+      { id: 9100002, dropMonsterIds: [], recipeIds: [], hasRecipe: true },
       null,
     ]);
     expect([...result.monsters]).toEqual([9300010, 9300011]);

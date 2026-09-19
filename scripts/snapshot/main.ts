@@ -3,6 +3,7 @@
  *
  * Options:
  *   --dry-run            count the planned requests per resource, download no data
+ *   --refresh            rebuild a complete snapshot even if one exists (the disk cache is still used)
  *   --only a,b           restrict to these resources (phase A tables must already be cached for phase B)
  *   --max-requests <n>   request budget, default 2000; the script refuses to start beyond it
  */
@@ -54,6 +55,7 @@ class Halt extends Error {}
 
 function parseArgs(argv: readonly string[]) {
   const dryRun = argv.includes('--dry-run');
+  const refresh = argv.includes('--refresh');
   const onlyIndex = argv.indexOf('--only');
   const only = onlyIndex >= 0 ? (argv[onlyIndex + 1] ?? '').split(',').filter(Boolean) : null;
   const maxIndex = argv.indexOf('--max-requests');
@@ -61,7 +63,7 @@ function parseArgs(argv: readonly string[]) {
   if (!Number.isInteger(maxRequests) || maxRequests <= 0) {
     throw new Halt('--max-requests attend un entier positif');
   }
-  return { dryRun, only, maxRequests };
+  return { dryRun, refresh, only, maxRequests };
 }
 
 function describeError(error: ClientError): string {
@@ -118,7 +120,7 @@ async function main(): Promise<void> {
     args.only === null ? manifestPath : path.join(versionDir, 'snapshot.partial.json');
   console.log(`Version des données de jeu : ${version}`);
 
-  if (!args.dryRun && args.only === null) {
+  if (!args.dryRun && !args.refresh && args.only === null) {
     try {
       const existing = JSON.parse(await readFile(manifestPath, 'utf8')) as SnapshotManifest;
       if (existing.complete && existing.gameVersion === version) {

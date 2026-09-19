@@ -141,7 +141,11 @@ export function collectReferences(input: {
   return refs;
 }
 
-/** Second wave, once the referenced items are known: their drop monsters and recipes. */
+/**
+ * Second wave, once the referenced items are known: their drop monsters and recipes.
+ * `hasRecipe` tells that the item is craftable; `recipeIds` lists the recipes that USE the item
+ * (observed on the real snapshot, see docs/DATA_NOTES.md §14), so it is not used here.
+ */
 export function collectFromItems(items: readonly unknown[]): {
   monsters: Set<number>;
   itemsWithRecipe: Set<number>;
@@ -152,7 +156,7 @@ export function collectFromItems(items: readonly unknown[]): {
     const i = asObj(item);
     if (!i) continue;
     for (const id of asArray(i.dropMonsterIds)) addId(monsters, id);
-    if (asArray(i.recipeIds).length > 0) addId(itemsWithRecipe, i.id);
+    if (i.hasRecipe === true) addId(itemsWithRecipe, i.id);
   }
   return { monsters, itemsWithRecipe };
 }

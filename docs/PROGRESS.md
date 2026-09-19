@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**M1-1 — Exploration DofusDB : terminée (56 requêtes, aucun 429). BLOQUANT : licence LPNC-IA 1.0 de l'API** (voir `DATA_NOTES.md` §0 et §13). Toute activité réseau vers DofusDB est suspendue ; M1-2 n'est pas commencée. Marc doit choisir : accord écrit de DofusDB, reprise du code par Marc avec IA accessoire, ou autre source de données.
+**M1-2 — Client de snapshot : terminée (2026-09-19).** Snapshot complet `3.6.11.15` dans `data/raw/` (364 requêtes au total, aucun 429). Blocage licence levé : Marc confirme l'accord de l'équipe DofusDB. Prochaine étape : M1-4 (compilation v0 et rapport), puis M1-5.
 
 ## Étapes
 
@@ -12,7 +12,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M0-1 — Socle du dépôt · 2026-09-18 · commits `558eaf2` → `README/PROGRESS` (voir `git log`)
 - [x] M0-2 — CI et déploiement GitHub Pages · 2026-09-18 · commit `5105a3c`
 - [x] M1-1 — Exploration de l'API DofusDB (60 requêtes max) · 2026-09-18 · 56 requêtes · `DATA_NOTES.md` v0.1
-- [ ] M1-2 — Client de snapshot · **suspendue** (licence, voir M1-1)
+- [x] M1-2 — Client de snapshot · 2026-09-19 · commits `4e72b59` et suivant · snapshot `3.6.11.15`
 - [x] M1-3 — Parseur syntaxique des critères (sans réseau) · 2026-09-18 · commit `5a6ba9d`
 - [ ] M1-4 — Compilation v0 et rapport
 - [ ] M1-5 — Tranches verticales et fixtures
@@ -22,7 +22,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 - Nom : Roadbook (provisoire) · UI : Preact + signals · hébergement : GitHub Pages · dataset versionné dans git : oui.
 - Dépôt : https://github.com/devmarcpro/dofushelper (remote `origin`, branche `main`, jamais poussé par l'agent).
-- Accord de l'équipe DofusDB : pas encore reçu. M1-2 s'arrête après le `--dry-run`.
+- Accord de l'équipe DofusDB : **reçu, confirmé par Marc le 2026-09-19** (« j'ai l'accord, tout est bon »), licence LPNC-IA comprise. Le snapshot complet est autorisé.
 - Adresse de contact pour les en-têtes HTTP : à demander au début de M1-1.
 
 ## Décisions techniques prises en M0-1
@@ -61,11 +61,14 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 Restent à Marc : contrôle visuel à 380 px, premier `git push`, réglages GitHub Pages, accord de l'équipe DofusDB (bloque le snapshot complet M1-2).
 
-## Décision en attente de Marc (bloquante, 2026-09-18)
+## Décisions techniques prises en M1-2 (carte blanche)
 
-Licence LPNC-IA 1.0 de l'API DofusDB : exclut les projets produits majoritairement par IA et les pipelines automatisés pilotés par IA ; non commercial ; attribution exacte obligatoire ; partage à l'identique. Options dans `DATA_NOTES.md` §13.1. Jusqu'à la décision : aucune requête DofusDB, pas de snapshot, pas de publication de données. Le cache `data/raw/_explore/` (gitignored) est conservé pour instruire la décision ; à supprimer si Marc renonce à DofusDB.
-
-Autres découvertes majeures de M1-1 : les Dofus sont donnés par des **succès** (`achievementsThatReward`), pas par des quêtes ; les critères d'objectifs de succès ont 3 arguments et des lettres (`EM>147,0,d`) : le parseur M1-3 doit être étendu avant M1-4 ; étapes, objectifs et récompenses sont embarqués dans `/quests` ; `accountLinked` existe sur les succès (Q1 tranchée).
+- Parseur étendu avant M1-4 : arguments entiers **ou identifiants**, en nombre quelconque (`EM>147,0,d`). `CriterionAtom.args` devient `(number | string)[]` : écart assumé avec SPEC §6.1, à reporter dans la SPEC par Marc.
+- Snapshot : quêtes et succès téléchargés avec leurs objets embarqués (96 pages au lieu de ~700). Phase B par lots `id[$in][]` de 50 : objets, recettes (`hasRecipe`), ingrédients, monstres (objectifs, critères `EM`, donjons, drops des objets), PNJ, sous-zones.
+- Le type « Dofus » est résolu à l'exécution dans `item-types` (`name.fr === 'Dofus'`), jamais écrit en dur.
+- `--only` écrit `snapshot.partial.json` ; seul un run complet écrit `snapshot.json`. `--refresh` reconstruit depuis le cache.
+- Table `scripts/build-data/objective-types.ts` : position des ids dans les paramètres d'objectifs, tirée de DATA_NOTES §4.
+- Attribution LPNC-IA ajoutée au pied de page et au README. **Reste à Marc : choisir une licence de dépôt compatible (non commerciale, partage à l'identique).**
 
 ## Notes de reprise
 
