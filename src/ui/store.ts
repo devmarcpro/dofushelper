@@ -17,7 +17,7 @@ import {
   type History,
   type ProgressStore,
 } from '../state/persistence';
-import { emptyState, type AppState, type StateDeps } from '../state/types';
+import { STORAGE_KEY, emptyState, type AppState, type StateDeps } from '../state/types';
 import { createLabels, type Labels } from './labels';
 import { parseRoute, type Route } from './router';
 import { buildSearchIndex, type SearchEntry } from './search';
@@ -47,10 +47,26 @@ function openStore(): ProgressStore {
 const progressStore = openStore();
 const loaded = progressStore.load();
 
-/** Set when the saved state is unreadable. While set, NOTHING is written: the data is never overwritten. */
-export const corrupt = signal<{ raw: string; reason: string } | null>(
-  loaded.t === 'corrupt' ? { raw: loaded.raw, reason: loaded.reason } : null,
+/**
+ * Set when the saved state cannot be used as is. While set, NOTHING is written, so the stored
+ * data is never overwritten. `newer` is valid data written by a more recent build of the site:
+ * the answer is to reload, never to erase.
+ */
+export const blocked = signal<
+  { t: 'corrupt'; raw: string; reason: string } | { t: 'newer'; raw: string } | null
+>(
+  loaded.t === 'corrupt'
+    ? { t: 'corrupt', raw: loaded.raw, reason: loaded.reason }
+    : loaded.t === 'newer'
+      ? { t: 'newer', raw: loaded.raw }
+      : null,
 );
+
+/** True once a write has failed: the browser refuses to store anything (private mode, quota). */
+export const storageBlocked = signal(false);
+
+/** True when another tab has saved a different state: this tab would overwrite it blindly. */
+export const otherTabSaved = signal(false);
 
 export const history = signal<History>(
   initialHistory(loaded.t === 'ok' ? loaded.state : emptyState()),
@@ -59,13 +75,23 @@ export const appState = computed<AppState>(() => history.value.present);
 export const character = computed(() => activeCharacter(appState.value));
 export const canUndo = computed(() => history.value.previous !== null);
 
-const saver = createDebouncedSaver(progressStore, {
-  set: (fn, ms) => window.setTimeout(fn, ms),
-  clear: (handle) => window.clearTimeout(handle as number),
-});
+const saver = createDebouncedSaver(
+  {
+    ...progressStore,
+    save: (state) => {
+      const ok = progressStore.save(state);
+      storageBlocked.value = !ok;
+      return ok;
+    },
+  },
+  {
+    set: (fn, ms) => window.setTimeout(fn, ms),
+    clear: (handle) => window.clearTimeout(handle as number),
+  },
+);
 
 function persist(): void {
-  if (corrupt.value === null) saver.schedule(history.value.present);
+  if (blocked.value === null && !otherTabSaved.value) saver.schedule(history.value.present);
 }
 
 /** Applies a pure state change. `undoable` marks progression changes (ticks, inventory). */
@@ -84,9 +110,22 @@ export function undoLast(): void {
 
 /** The player explicitly gives up the unreadable state (after having been offered the raw export). */
 export function resetCorruptState(): void {
-  corrupt.value = null;
+  blocked.value = null;
   progressStore.clear();
   history.value = initialHistory(emptyState());
+}
+
+/** Takes what another tab saved, dropping what was done here since. */
+export function adoptStoredState(): void {
+  const again = progressStore.load();
+  if (again.t === 'ok') history.value = initialHistory(again.state);
+  otherTabSaved.value = false;
+}
+
+/** Keeps what this tab has, and overwrites the other tab's work on the next save. */
+export function keepThisTabState(): void {
+  otherTabSaved.value = false;
+  persist();
 }
 
 export function exportJson(): string {
@@ -147,6 +186,16 @@ export const toast = signal<Toast | null>(null);
 export const route = signal<Route>(parseRoute(window.location.hash));
 
 export function startApp(): void {
+  /*
+   * Another tab writing the same key would otherwise be overwritten blindly by the next save
+   * here, losing everything it did. Stop writing and let the player choose which one wins.
+   */
+  window.addEventListener('storage', (event) => {
+    if (event.key !== STORAGE_KEY || event.newValue === null) return;
+    if (event.newValue === JSON.stringify(history.value.present)) return;
+    otherTabSaved.value = true;
+  });
+
   window.addEventListener('hashchange', () => {
     route.value = parseRoute(window.location.hash);
     // A message about what just happened does not survive a change of screen.

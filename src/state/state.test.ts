@@ -116,6 +116,20 @@ describe('actions', () => {
     expect(activeCharacter(none)).toMatchObject({ doneQuests: [], doneAchievements: [] });
   });
 
+  it('writes only the job levels the reader accepts', () => {
+    // Regression: levels of 0, 1.5 or -3 were stored, then silently dropped at the next reload.
+    const { state, deps, id } = seeded();
+    const next = updateCharacter(state, id, { jobs: { 12: 0, 13: 1.5, 14: -3, 15: 20 } }, deps);
+    expect(activeCharacter(next)?.jobs).toEqual({ 12: 1, 13: 2, 14: 1, 15: 20 });
+    const reloaded = parseAppState(JSON.parse(JSON.stringify(next)));
+    expect(reloaded.ok && reloaded.value.characters[0]?.jobs).toEqual({
+      12: 1,
+      13: 2,
+      14: 1,
+      15: 20,
+    });
+  });
+
   it('stores owned quantities, removing zero and rejecting negatives', () => {
     const { state, deps, id } = seeded();
     let next = setOwnedQuantity(state, id, 9100001, 4.6, deps);
@@ -194,14 +208,21 @@ describe('validation and migrations', () => {
     ).toBe(false);
   });
 
-  it('refuses a state written by a newer or unknown schema', () => {
+  it('tells a newer state apart from a broken one: valid data is never offered for reset', () => {
+    // Regression: a state written by a newer build used to land on the "illisible" screen,
+    // whose second button erases it for good.
     expect(migrate({ schemaVersion: 2, characters: [] })).toEqual({
       ok: false,
-      error: 'schemaVersion 2 plus récent que cette version du site',
+      error: { t: 'newer', version: 2 },
+    });
+    expect(decodeState('{"schemaVersion":2,"characters":[]}')).toEqual({
+      t: 'newer',
+      raw: '{"schemaVersion":2,"characters":[]}',
+      version: 2,
     });
     expect(migrate({ schemaVersion: 0, characters: [] })).toEqual({
       ok: false,
-      error: 'aucune migration depuis la version 0',
+      error: { t: 'broken', reason: 'aucune migration depuis la version 0' },
     });
     expect(migrate([]).ok).toBe(false);
   });
@@ -241,7 +262,8 @@ describe('stores', () => {
       },
     });
     expect(blocked.load()).toEqual({ t: 'empty' });
-    expect(() => blocked.save(emptyState())).not.toThrow();
+    // Regression: a failed write was silent, so hours of progress could be lost unnoticed.
+    expect(blocked.save(emptyState())).toBe(false);
     expect(() => blocked.clear()).not.toThrow();
   });
 
@@ -280,7 +302,12 @@ describe('export and import', () => {
     const { state } = seeded();
     const imported = importState(emptyState(), exportState(state, '2026-01-02T00:00:00.000Z'));
     expect(imported.ok && imported.value.state).toEqual(state);
-    expect(imported.ok && imported.value.summary).toEqual({ added: 1, replaced: 0, kept: 0 });
+    expect(imported.ok && imported.value.summary).toEqual({
+      added: 1,
+      replaced: 0,
+      kept: 0,
+      ambiguous: 0,
+    });
   });
 
   it('merges by character: the most recent wins, others are kept', () => {
@@ -291,11 +318,21 @@ describe('export and import', () => {
 
     const keepNewer = importState(newer, older);
     expect(keepNewer.ok && keepNewer.value.state.characters[0]?.doneQuests).toEqual([9000001]);
-    expect(keepNewer.ok && keepNewer.value.summary).toEqual({ added: 0, replaced: 0, kept: 1 });
+    expect(keepNewer.ok && keepNewer.value.summary).toEqual({
+      added: 0,
+      replaced: 0,
+      kept: 1,
+      ambiguous: 0,
+    });
 
     const takeNewer = importState(state, exportState(newer, 'x'));
     expect(takeNewer.ok && takeNewer.value.state.characters[0]?.doneQuests).toEqual([9000001]);
-    expect(takeNewer.ok && takeNewer.value.summary).toEqual({ added: 0, replaced: 1, kept: 0 });
+    expect(takeNewer.ok && takeNewer.value.summary).toEqual({
+      added: 0,
+      replaced: 1,
+      kept: 0,
+      ambiguous: 0,
+    });
 
     const other = createCharacter(emptyState(), { name: 'FAKE Cra' }, makeDeps(100, 'FAKE-other'));
     const both = importState(other, older);
@@ -303,6 +340,54 @@ describe('export and import', () => {
       'FAKE Cra',
       'FAKE Iop',
     ]);
+  });
+
+  it('compares dates as instants, not as text', () => {
+    // Regression: '2026-01-01T10:00:00+02:00' is 08:00Z, so OLDER than '...T09:30:00.000Z',
+    // but a string comparison ranked it first and silently replaced the newer progression.
+    const { state, id } = seeded();
+    const local = {
+      ...state,
+      characters: [
+        { ...state.characters[0]!, updatedAt: '2026-01-01T09:30:00.000Z', doneQuests: [9000001] },
+      ],
+    };
+    const olderFile = exportState(
+      {
+        ...state,
+        characters: [
+          {
+            ...state.characters[0]!,
+            id,
+            updatedAt: '2026-01-01T10:00:00+02:00',
+            doneQuests: [9000002],
+          },
+        ],
+      },
+      'x',
+    );
+    const merged = importState(local, olderFile);
+    expect(merged.ok && merged.value.state.characters[0]?.doneQuests).toEqual([9000001]);
+    expect(merged.ok && merged.value.summary.kept).toBe(1);
+  });
+
+  it('keeps the local copy and says so when a date cannot be compared', () => {
+    const { state, id } = seeded();
+    const noDate = exportState(
+      {
+        ...state,
+        characters: [{ ...state.characters[0]!, id, updatedAt: '', doneQuests: [9000002] }],
+      },
+      'x',
+    );
+    const merged = importState(state, noDate);
+    expect(merged.ok && merged.value.summary).toEqual({
+      added: 0,
+      replaced: 0,
+      kept: 0,
+      ambiguous: 1,
+    });
+    expect(merged.ok && merged.value.state.characters[0]?.doneQuests).toEqual([]);
   });
 
   it('rejects an unreadable file without touching the current state', () => {

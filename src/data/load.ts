@@ -62,7 +62,16 @@ export async function loadDataset(
   if (manifest.format !== DATASET_FORMAT)
     return err({ t: 'format', found: manifest.format, expected: DATASET_FORMAT });
 
-  const hashes = new Map(manifest.files.map((f) => [f.file, f.sha256]));
+  const hashes = new Map(
+    manifest.files.flatMap((entry): [string, string][] =>
+      entry !== null &&
+      typeof entry === 'object' &&
+      typeof entry.file === 'string' &&
+      typeof entry.sha256 === 'string'
+        ? [[entry.file, entry.sha256]]
+        : [],
+    ),
+  );
   const names = [...ARRAY_FILES, 'refs'] as const;
   const results = await Promise.all(
     names.map(async (name) => {

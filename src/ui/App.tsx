@@ -16,10 +16,15 @@ import {
   appState,
   canUndo,
   character,
-  corrupt,
+  blocked,
   data,
+  adoptStoredState,
   dispatch,
   downloadText,
+  exportJson,
+  keepThisTabState,
+  otherTabSaved,
+  storageBlocked,
   loadData,
   resetCorruptState,
   route,
@@ -98,10 +103,35 @@ function Header() {
   );
 }
 
-function CorruptState() {
+function BlockedState() {
   const confirming = useSignal(false);
-  const state = corrupt.value;
+  const state = blocked.value;
   if (!state) return null;
+  // Data written by a NEWER build is valid: offer a reload, never an erase.
+  if (state.t === 'newer') {
+    return (
+      <section class="card card--alert" role="alert">
+        <h1 class="card__title">{fr.newer.title}</h1>
+        <p>{fr.newer.detail}</p>
+        <div class="actions">
+          <button
+            type="button"
+            class="button button--primary"
+            onClick={() => window.location.reload()}
+          >
+            {fr.newer.reload}
+          </button>
+          <button
+            type="button"
+            class="button"
+            onClick={() => downloadText('roadbook-progression.json', state.raw)}
+          >
+            {fr.newer.download}
+          </button>
+        </div>
+      </section>
+    );
+  }
   return (
     <section class="card card--alert" role="alert">
       <h1 class="card__title">{fr.corrupt.title}</h1>
@@ -132,7 +162,7 @@ function CorruptState() {
 function Page() {
   const current = route.value;
   const state = data.value;
-  if (corrupt.value) return <CorruptState />;
+  if (blocked.value) return <BlockedState />;
   if (current.t === 'about') return <About />;
   if (current.t === 'notFound') {
     return (
@@ -210,6 +240,44 @@ function ToastBar() {
   );
 }
 
+/** Standing warnings: nothing is being saved, or another tab holds a different progression. */
+function Banners() {
+  if (otherTabSaved.value) {
+    return (
+      <section class="card card--alert" role="alert">
+        <h2 class="card__title">{fr.otherTab.title}</h2>
+        <p>{fr.otherTab.detail}</p>
+        <div class="actions">
+          <button type="button" class="button button--primary" onClick={adoptStoredState}>
+            {fr.otherTab.adopt}
+          </button>
+          <button type="button" class="button" onClick={keepThisTabState}>
+            {fr.otherTab.keep}
+          </button>
+        </div>
+      </section>
+    );
+  }
+  if (storageBlocked.value) {
+    return (
+      <section class="card card--alert" role="alert">
+        <h2 class="card__title">{fr.storageBlocked.title}</h2>
+        <p>{fr.storageBlocked.detail}</p>
+        <div class="actions">
+          <button
+            type="button"
+            class="button button--primary"
+            onClick={() => downloadText('roadbook-progression.json', exportJson())}
+          >
+            {fr.characters.exportAll}
+          </button>
+        </div>
+      </section>
+    );
+  }
+  return null;
+}
+
 export function App() {
   const state = data.value;
   return (
@@ -226,6 +294,7 @@ export function App() {
         {fr.app.skipToContent}
       </a>
       <Header />
+      <Banners />
       <ErrorBoundary key={routeHref(route.value.t === 'notFound' ? { t: 'home' } : route.value)}>
         <main class="main" id="contenu" tabIndex={-1}>
           <Page />

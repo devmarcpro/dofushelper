@@ -14,6 +14,18 @@ export interface CharacterInput {
   jobs?: Record<number, number>;
 }
 
+/** Job levels follow the same rule as the character level: the reader drops anything else. */
+const clampJobs = (jobs: Record<number, number> | undefined): Record<number, number> => {
+  const out: Record<number, number> = {};
+  for (const [key, value] of Object.entries(jobs ?? {})) {
+    const id = Number(key);
+    if (!Number.isInteger(id) || !Number.isFinite(value)) continue;
+    const level = Math.min(200, Math.max(1, Math.round(value)));
+    if (level >= 1) out[id] = level;
+  }
+  return out;
+};
+
 const clampLevel = (level: number | null | undefined): number | null =>
   level === null || level === undefined || !Number.isFinite(level)
     ? null
@@ -26,7 +38,7 @@ export function createCharacter(state: AppState, input: CharacterInput, deps: St
     breedId: input.breedId ?? null,
     level: clampLevel(input.level),
     alignment: input.alignment ?? null,
-    jobs: { ...(input.jobs ?? {}) },
+    jobs: clampJobs(input.jobs),
     serverName: input.serverName?.trim() || null,
     doneQuests: [],
     doneAchievements: [],
@@ -72,7 +84,7 @@ export function updateCharacter(
     level: input.level !== undefined ? clampLevel(input.level) : c.level,
     alignment: input.alignment !== undefined ? input.alignment : c.alignment,
     serverName: input.serverName !== undefined ? input.serverName?.trim() || null : c.serverName,
-    jobs: input.jobs !== undefined ? { ...input.jobs } : c.jobs,
+    jobs: input.jobs !== undefined ? clampJobs(input.jobs) : c.jobs,
   }));
 }
 

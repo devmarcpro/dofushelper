@@ -192,7 +192,7 @@ function CharacterCard({ who, active }: { who: Character; active: boolean }) {
             <button
               type="button"
               class="button button--danger"
-              onClick={() => dispatch((state) => deleteCharacter(state, who.id))}
+              onClick={() => dispatch((state) => deleteCharacter(state, who.id), true)}
             >
               {fr.characters.removeConfirm(who.name)}
             </button>
@@ -224,9 +224,12 @@ export function Characters() {
       message.value = { text: fr.characters.importError(result.error), error: true };
       return;
     }
-    dispatch(() => result.value.state);
-    const { added, replaced, kept } = result.value.summary;
-    message.value = { text: fr.characters.importDone(added, replaced, kept), error: false };
+    dispatch(() => result.value.state, true);
+    const { added, replaced, kept, ambiguous } = result.value.summary;
+    message.value = {
+      text: fr.characters.importDone(added, replaced, kept, ambiguous),
+      error: false,
+    };
   };
 
   return (

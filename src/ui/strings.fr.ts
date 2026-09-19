@@ -77,6 +77,24 @@ export const fr = {
     reset: 'Repartir d’un état vide',
     resetConfirm: 'Confirmer : effacer et repartir à zéro',
   },
+  newer: {
+    title: 'Ta progression vient d’une version plus récente du site',
+    detail:
+      'Rien n’a été touché. Recharge la page pour récupérer la dernière version du site, qui saura la lire.',
+    reload: 'Recharger la page',
+    download: 'Télécharger une copie par sécurité',
+  },
+  storageBlocked: {
+    title: 'Ta progression n’est pas enregistrée',
+    detail:
+      'Ce navigateur refuse d’écrire (navigation privée, stockage bloqué ou plein). Tout fonctionne, mais tout sera perdu en fermant l’onglet : exporte ta progression.',
+  },
+  otherTab: {
+    title: 'Un autre onglet a enregistré une progression différente',
+    detail: 'Pour ne rien écraser, cet onglet a cessé d’enregistrer. Choisis la version à garder.',
+    adopt: 'Prendre celle de l’autre onglet',
+    keep: 'Garder celle de cet onglet',
+  },
   crash: {
     title: 'Une erreur inattendue est survenue',
     detail:
@@ -157,8 +175,11 @@ export const fr = {
       'Ta progression ne vit que dans ce navigateur. Exporte-la pour la conserver ou la déplacer.',
     exportAll: 'Exporter toute la progression',
     importFile: 'Importer un fichier',
-    importDone: (added: number, replaced: number, kept: number) =>
-      `Import terminé : ${added} ${plural(added, 'ajouté', 'ajoutés')}, ${replaced} ${plural(replaced, 'mis à jour', 'mis à jour')}, ${kept} ${plural(kept, 'conservé tel quel', 'conservés tels quels')}.`,
+    importDone: (added: number, replaced: number, kept: number, ambiguous: number) =>
+      `Import terminé : ${added} ${plural(added, 'ajouté', 'ajoutés')}, ${replaced} ${plural(replaced, 'mis à jour', 'mis à jour')}, ${kept} ${plural(kept, 'conservé tel quel', 'conservés tels quels')}.` +
+      (ambiguous > 0
+        ? ` ${ambiguous} ${plural(ambiguous, 'personnage sans date exploitable a été conservé tel quel', 'personnages sans date exploitable ont été conservés tels quels')}.`
+        : ''),
     importError: (reason: string) => `Import impossible : ${reason}`,
     empty: 'Aucun personnage pour le moment.',
   },

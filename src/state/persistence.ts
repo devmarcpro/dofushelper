@@ -15,21 +15,30 @@ type Migration = (state: Record<string, unknown>) => Record<string, unknown>;
 /** MIGRATIONS[n] upgrades a state from version n to n + 1. Empty while the schema is at version 1. */
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {};
 
-export function migrate(value: unknown): Result<AppState, string> {
+/** `newer` means: valid data this build is too old to read. It must never be offered for reset. */
+export type MigrateError = { t: 'newer'; version: unknown } | { t: 'broken'; reason: string };
+
+export function migrate(value: unknown): Result<AppState, MigrateError> {
   if (value === null || typeof value !== 'object' || Array.isArray(value))
-    return err('état : objet attendu');
+    return err({ t: 'broken', reason: 'état : objet attendu' });
   let current = value as Record<string, unknown>;
   for (let guard = 0; guard < 100; guard += 1) {
     const version = current.schemaVersion;
-    if (version === SCHEMA_VERSION) return parseAppState(current);
-    if (typeof version !== 'number' || version > SCHEMA_VERSION) {
-      return err(`schemaVersion ${JSON.stringify(version)} plus récent que cette version du site`);
+    if (version === SCHEMA_VERSION) {
+      const parsed = parseAppState(current);
+      return parsed.ok ? parsed : err({ t: 'broken', reason: parsed.error });
+    }
+    if (typeof version === 'number' && version > SCHEMA_VERSION) {
+      return err({ t: 'newer', version });
+    }
+    if (typeof version !== 'number') {
+      return err({ t: 'broken', reason: `schemaVersion ${JSON.stringify(version)} inattendu` });
     }
     const step = MIGRATIONS[version];
-    if (!step) return err(`aucune migration depuis la version ${version}`);
+    if (!step) return err({ t: 'broken', reason: `aucune migration depuis la version ${version}` });
     current = step(current);
   }
-  return err('migrations : boucle détectée');
+  return err({ t: 'broken', reason: 'migrations : boucle détectée' });
 }
 
 // ---------- Store ----------
@@ -38,11 +47,14 @@ export type LoadResult =
   | { t: 'empty' }
   | { t: 'ok'; state: AppState }
   /** Unreadable: the raw text is handed back for a rescue export, and nothing gets overwritten. */
-  | { t: 'corrupt'; raw: string; reason: string };
+  | { t: 'corrupt'; raw: string; reason: string }
+  /** Written by a newer build of the site. Valid data: offer a reload, never a reset. */
+  | { t: 'newer'; raw: string; version: unknown };
 
 export interface ProgressStore {
   load(): LoadResult;
-  save(state: AppState): void;
+  /** False when nothing could be written (private mode, blocked storage, quota). */
+  save(state: AppState): boolean;
   clear(): void;
 }
 
@@ -60,9 +72,10 @@ export function decodeState(raw: string): LoadResult {
     return { t: 'corrupt', raw, reason: 'JSON illisible' };
   }
   const migrated = migrate(parsed);
-  return migrated.ok
-    ? { t: 'ok', state: migrated.value }
-    : { t: 'corrupt', raw, reason: migrated.error };
+  if (migrated.ok) return { t: 'ok', state: migrated.value };
+  return migrated.error.t === 'newer'
+    ? { t: 'newer', raw, version: migrated.error.version }
+    : { t: 'corrupt', raw, reason: migrated.error.reason };
 }
 
 export function createStorageStore(storage: StorageLike, key: string = STORAGE_KEY): ProgressStore {
@@ -79,8 +92,10 @@ export function createStorageStore(storage: StorageLike, key: string = STORAGE_K
     save(state) {
       try {
         storage.setItem(key, JSON.stringify(state));
+        return true;
       } catch {
-        // quota or blocked storage: the session keeps working in memory
+        // Quota or blocked storage. The session keeps working in memory, and the caller warns.
+        return false;
       }
     },
     clear() {
@@ -101,6 +116,7 @@ export function createMemoryStore(
     load: () => (content === null ? { t: 'empty' } : decodeState(content)),
     save: (state) => {
       content = JSON.stringify(state);
+      return true;
     },
     clear: () => {
       content = null;
@@ -114,14 +130,16 @@ export function createDebouncedSaver(
   store: ProgressStore,
   timers: { set: (fn: () => void, ms: number) => unknown; clear: (handle: unknown) => void },
   delayMs = 300,
-): { schedule(state: AppState): void; flush(): void } {
+): { schedule(state: AppState): void; flush(): boolean } {
   let pending: AppState | null = null;
   let handle: unknown = null;
-  const flush = (): void => {
+  let lastWriteOk = true;
+  const flush = (): boolean => {
     if (handle !== null) timers.clear(handle);
     handle = null;
-    if (pending) store.save(pending);
+    if (pending) lastWriteOk = store.save(pending);
     pending = null;
+    return lastWriteOk;
   };
   return {
     schedule(state) {
@@ -150,6 +168,15 @@ export interface ImportSummary {
   added: number;
   replaced: number;
   kept: number;
+  /** Characters whose date could not be compared: the local copy was kept, and the player told. */
+  ambiguous: number;
+}
+
+/** Instant of an `updatedAt`, or null when it is missing or unparsable. */
+function instantOf(value: string): number | null {
+  if (value.length === 0) return null;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 /** Merge by character: the most recent `updatedAt` wins; characters absent from the file are kept. */
@@ -168,16 +195,29 @@ export function importState(
       ? (parsed as { state: unknown }).state
       : parsed;
   const incoming = migrate(payload);
-  if (!incoming.ok) return incoming;
+  if (!incoming.ok) {
+    return err(
+      incoming.error.t === 'newer'
+        ? `fichier écrit par une version plus récente du site (schéma ${String(incoming.error.version)})`
+        : incoming.error.reason,
+    );
+  }
 
-  const summary: ImportSummary = { added: 0, replaced: 0, kept: 0 };
+  const summary: ImportSummary = { added: 0, replaced: 0, kept: 0, ambiguous: 0 };
   const byId = new Map<string, Character>(current.characters.map((c) => [c.id, c]));
   for (const character of incoming.value.characters) {
     const existing = byId.get(character.id);
     if (!existing) {
       byId.set(character.id, character);
       summary.added += 1;
-    } else if (character.updatedAt > existing.updatedAt) {
+      continue;
+    }
+    const incomingAt = instantOf(character.updatedAt);
+    const existingAt = instantOf(existing.updatedAt);
+    if (incomingAt === null || existingAt === null) {
+      // Cannot tell which is the most recent: keep what is here, and say so.
+      summary.ambiguous += 1;
+    } else if (incomingAt > existingAt) {
       byId.set(character.id, character);
       summary.replaced += 1;
     } else {
