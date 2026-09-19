@@ -70,7 +70,7 @@ Les cinq routes existent ✅ (`quest-steps?questId=`, `quest-objectives?stepId=`
 
 **`quest-objectives`** — ✅ `stepId`, `typeId`, `parameters { numParams, parameter0…4, dungeonOnly }`, `text` (balises `{npc,id}`, `{item,id}`, `{monster,id}`, `{map,id}`, `{subarea,id}`), `mapId`, `dialogId`, `coords`, `need.generated { dungeons, items, quantities, itemToUse }`. Table des 18 types et position des paramètres : `DATA_NOTES.md` §4.
 
-**`items`** — ✅ `id`, `typeId`, `type` (avec `superTypeId`), `name`, `level`, `img`, `iconId`, `criterions`, `criterionsTarget`, `recipeIds[]`, `recipesThatUse[]`, `dropMonsterIds[]`, `dropSubAreaIds[]`, `resourcesBySubarea`, **`questsThatUse[]`**, **`questsThatReward[]`**, **`achievementsThatReward[]`**, `exchangeable`, `isSaleable`, `usable`, `hasRecipe`, `price`.
+**`items`** — ✅ `id`, `typeId`, `type` (avec `superTypeId`), `name`, `level`, `img`, `iconId`, `criterions`, `criterionsTarget`, `recipeIds[]` (⚠️ recettes qui UTILISENT l'objet, voir `DATA_NOTES.md` §14), `recipesThatUse[]`, `dropMonsterIds[]`, `dropSubAreaIds[]`, `resourcesBySubarea`, **`questsThatUse[]`**, **`questsThatReward[]`**, **`achievementsThatReward[]`**, `exchangeable`, `isSaleable`, `usable`, `hasRecipe`, `price`.
 → « Qui donne ce Dofus ? » = `achievementsThatReward` dans 25 cas sur 34, `questsThatReward` dans 3 cas, aucun dans 8 cas ✅ (2026-09-18). Les Dofus de série de quêtes sont donnés par le succès qui clôt la série.
 → ✅ type « Dofus » = `item-types` **23** (super-type 13 « Dofus / Trophée / Prysmaradite ») ; super-type des objets de quête = **14** « Objet de quête ». 34 objets de type 23 (avec doublons de nom).
 
@@ -153,6 +153,19 @@ Opérateurs rencontrés : `=` 3 304 · `>` 1 745 · `!` 894 · `<` 48 · `E` 2. 
 | `Sv` `HA` | 3 / 1 | inconnu | ⚠️ | `unknown` |
 
 Toute clé absente de cette table → `unknown`, affichée brute, jamais bloquante. Les critères des **objectifs de succès** utilisent d'autres clés, vues en M1-1 ⚠️ : `EM` (monstre tué, ex. `EM>147,0,d` : « avoir tué 147 en donjon »), `HD` (objet obtenu en fin de combat, `HD>33001,0`), `Ob` (récompenses de succès, `Ob!37`), `ST` (drops, `ST=2`). Un atome seul peut être entre parenthèses : `(Qf=1521)`. Inventaire complet au rapport M1-4.
+
+### Clés rencontrées hors de la table ci-dessus (rapport M1-4, version 3.6.11.15)
+
+Toutes produisent `unknown` tant que leur sens n'est pas établi ⚠️. Occurrences et exemples : `docs/reports/data-report-3.6.11.15.md`. Les quatre sources (lancement de quête, objectifs de succès, critères d'objet, conditions de récompense) s'analysent à **100 %** avec le parseur étendu (arguments entiers ou identifiants, en nombre quelconque).
+
+| Source | Clés | Sens |
+|---|---|---|
+| Lancement de quête | `SH` (4), `Nf` (1) | ⚠️ inconnu |
+| Objectifs de succès | `Ef` (1 887), `EH` (677), `BI` (423), `EB` (297), `EM` (147), `EI` (83), `lB` (81), `Oa` (62), `HD` (37), `ES` (33), `QQ` (18), `EA` (15), `NC` (15), `Ea` (14), `EC` (6), `EJ` (5), `Kv` (4), `Et` `ET` `Eu` `EW` `EY` `Ez` `EZ` `HP` `NT` (3 chacune), `Eg` (1) | `EM>id,0,d` : « avoir tué le monstre id en donjon » ✅ (libellé `readableCriterion`) · `HD>id,0` : « obtenir l'objet id à la fin d'un combat » ✅ · le reste ⚠️ inconnu |
+| Critères d'objet | `PB` (33), `BI` (5), `cw` (4), `CA` `CC` `CI` `CS` `cv` `ha` `Ot` `Pn` `PT` (2 chacune), `CM` `CP` `OH` `PC` `Po` (1 chacune) | ⚠️ inconnu (clés minuscules possibles : `cw`, `cv`, `ha`) |
+| Conditions de récompense de succès | `Ob` (1 062) | ⚠️ inconnu (`Ob!<id du succès>`) |
+
+Seuls `Qf`, `OA` et les clés « moteur » de la première table créent des arêtes ou des conditions. 5 392 objectifs de succès sont de la forme `Qf=` ou `OA=` : ce sont eux qui relient les succès « Dofus » aux quêtes.
 
 ## 5. Vecteurs de test réels
 
@@ -240,5 +253,6 @@ Notre différence : le plan est **calculé** à partir des critères du jeu et d
 | 2026-09-18 | `quests` : `name`, `startCriterion`, total 1 978, page de 50 ; statistiques et vecteurs des §4–5 | ✅ | cache de `AntoninHuaut/DofusNoobsIdentifier` (GitHub, févr. 2026) |
 | 2026-09-18 | `quests` : `levelMin`, `levelMax`, `isDungeonQuest` | ✅ | code de `lurio84/dofus-agente` (GitHub) |
 | 2026-09-18 | M1-1 : `/version`, plafond `$limit` 50, `$limit=0`, routes §2.4, objets embarqués dans `quests` et `achievements`, champs §2.5 (quêtes, succès, objectifs, récompenses, objets, monstres, donjons, tables de référence), type Dofus 23, super-type 14, forme de `/criterion`, en-têtes, licence LPNC-IA 1.0 | ✅ | 56 requêtes réelles, cache `data/raw/_explore/`, détail dans `DATA_NOTES.md` |
+| 2026-09-19 | Premier snapshot complet 3.6.11.15 (364 requêtes), `items.recipeIds` = recettes qui utilisent l'objet et `hasRecipe` = fabricable, récompenses d'étape par tranche de niveau, `accountLinked` faux partout, grammaire étendue validée à 100 % sur 12 247 critères | ✅ | `DATA_NOTES.md` §14, `docs/reports/data-report-3.6.11.15.md` |
 | 2026-09-18 | Motifs d'URL du site (§2.6) | ⚠️ non vérifié | interdit en M1-1 ; à faire par Marc dans son navigateur |
 | — | tout ce qui porte ⚠️ | à faire en M1 | appels réels, résultats dans `DATA_NOTES.md` |
