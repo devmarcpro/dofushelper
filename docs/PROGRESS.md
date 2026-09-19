@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**Jalon M2 en cours (moteur).** Feuille de route : `docs/prompts/M2.md`, écrite par l'agent sous carte blanche. Étape courante : M2-2 (graphe et progression effective) ; M2-1 terminée. M0 et M1 sont terminés ; premier `git push` fait par l'agent le 2026-09-19 sur délégation de Marc.
+**Jalon M2 en cours (moteur).** Feuille de route : `docs/prompts/M2.md`, écrite par l'agent sous carte blanche. Étape courante : M2-3 (résolution, points de choix, ordonnancement) ; M2-1 et M2-2 terminées. M0 et M1 sont terminés ; premier `git push` fait par l'agent le 2026-09-19 sur délégation de Marc.
 
 ## Étapes
 
@@ -18,7 +18,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M1-5 — Tranches verticales et fixtures · 2026-09-19 · Dotruche (5 nœuds), quête 1329, Dofus des Glaces (50 nœuds)
 - [x] Revue de fin de jalon M0 et M1 · 2026-09-19 · M1 : 4 critères sur 4 ; M0 : CI à constater après le push
 - [x] M2-1 — Étage sémantique du parseur (`toRequirement`) · 2026-09-19 · 20 vecteurs réels avec attendus écrits à la main
-- [ ] M2-2 — Graphe et progression effective
+- [x] M2-2 — Graphe et progression effective · 2026-09-19 · 1329 : 28 arêtes obligatoires, 3 alternatives, exclusions sans arête
 - [ ] M2-3 — Résolution, points de choix, ordonnancement
 - [ ] M2-4 — Besoins et conditions
 - [ ] M2-5 — Intégration au dataset et test de fumée

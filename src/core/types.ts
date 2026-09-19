@@ -66,3 +66,31 @@ export type Requirement =
   | { t: 'hasItem'; itemId: ItemId; qty: number }
   | { t: 'context'; key: string; raw: string } // true in game, but a plan cannot drive it
   | { t: 'unknown'; raw: string }; // not interpreted: never blocking, always displayable
+
+export type NodeKey = `q:${QuestId}` | `a:${AchievementId}`;
+
+export type Goal =
+  | { t: 'item'; itemId: ItemId }
+  | { t: 'achievement'; id: AchievementId }
+  | { t: 'quest'; id: QuestId };
+
+/**
+ * What the player entered (SPEC §8). Only explicit facts: statuses, implied nodes and
+ * aggregates are always recomputed (golden rule 6). `null` means "not filled in", which is
+ * never blocking.
+ */
+export interface Character {
+  id: string;
+  name: string;
+  breedId: BreedId | null;
+  level: number | null;
+  alignment: AlignmentSide | null;
+  jobs: Record<JobId, number>;
+  serverName: string | null;
+  doneQuests: QuestId[];
+  doneAchievements: AchievementId[];
+  inventory: Record<ItemId, number>;
+  goals: Goal[];
+  choices: Record<string, number>;
+  updatedAt: string;
+}
