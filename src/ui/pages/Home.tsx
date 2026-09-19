@@ -14,9 +14,9 @@ function GoalCard({ goal }: { goal: Goal }) {
   const href = routeHref({ t: 'plan', goal, tab: 'steps' });
   return (
     <li class="card">
-      <h3 class="card__title">
-        <a href={href}>{names.goalName(goal) ?? href}</a>
-      </h3>
+      <h2 class="card__title">
+        <a href={href}>{names.goalName(goal) ?? fr.plan.unknownGoal}</a>
+      </h2>
       <progress
         class="progress"
         max={Math.max(1, plan.progress.total)}

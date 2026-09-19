@@ -29,6 +29,28 @@ a {
   outline-offset: 2px;
 }
 
+/*
+ * The main region only takes focus programmatically, so screen readers announce the new page.
+ * It is not a keyboard target: a 3px ring around the whole content is noise.
+ */
+.main:focus,
+.main:focus-visible {
+  outline: none;
+}
+
+/* A visually hidden input (the import file picker) must still show focus on its label. */
+.button:focus-within {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Links listed one per line are tap targets, not inline text: keep them above 24px. */
+.plain > li > a,
+.step__meta a {
+  display: inline-block;
+  padding-block: var(--space-1);
+}
+
 .layout {
   display: flex;
   flex-direction: column;

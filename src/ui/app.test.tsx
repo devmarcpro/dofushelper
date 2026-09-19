@@ -8,7 +8,7 @@ import { render } from 'preact';
 import { beforeAll, describe, expect, it } from 'vitest';
 import fixture from '../../tests/fixtures/item-7043-dofus-des-glaces.json';
 import { DATASET_FORMAT } from '../core/dataset';
-import { addGoal, createCharacter } from '../state/actions';
+import { addGoal, createCharacter, setNodeDone } from '../state/actions';
 import { parseRoute } from './router';
 import { fr } from './strings.fr';
 
@@ -119,6 +119,39 @@ describe('application smoke test', () => {
     expect(text()).toContain(fr.footer.dataCredit);
     await go('#/nowhere');
     expect(text()).toContain(fr.notFound.title);
+  });
+
+  it('the skip link moves the focus without hijacking the route', async () => {
+    // Regression: it wrote "#contenu" into the hash, which the router answered with the 404 page.
+    await go('#/objectifs');
+    const skip = document.querySelector<HTMLAnchorElement>('.skip-link');
+    skip?.click();
+    await flush();
+    expect(store.route.value).toEqual({ t: 'catalog' });
+    expect(document.activeElement?.id).toBe('contenu');
+    expect(text()).not.toContain(fr.notFound.title);
+  });
+
+  it('hides the undo button once the undo slot is gone, and clears the toast on navigation', async () => {
+    await go('#/plan/item-7043');
+    document.querySelector<HTMLInputElement>('#node-q-1329')?.click();
+    await flush();
+    const undoLabel = () =>
+      [...document.querySelectorAll('.toast button')].map((b) => b.textContent);
+    expect(undoLabel()).toContain(fr.toast.undo);
+
+    // A change that cannot be undone empties the slot: offering "Annuler" would do nothing.
+    store.dispatch((state) => state, false);
+    store.history.value = { present: store.appState.value, previous: null };
+    await flush();
+    expect(undoLabel()).not.toContain(fr.toast.undo);
+
+    store.undoLast();
+    store.dispatch(
+      (s, d) => setNodeDone(s, store.character.value?.id ?? '', 'q:1329', false, d),
+      true,
+    );
+    await flush();
   });
 
   it('never stores derived state', () => {

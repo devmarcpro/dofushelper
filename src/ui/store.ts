@@ -133,6 +133,15 @@ export async function loadData(): Promise<void> {
   dispatch((state) => setDatasetVersion(state, result.value.manifest.gameVersion));
 }
 
+// ---------- Toast (one at a time) ----------
+
+export interface Toast {
+  message: string;
+  undoable: boolean;
+}
+
+export const toast = signal<Toast | null>(null);
+
 // ---------- Route ----------
 
 export const route = signal<Route>(parseRoute(window.location.hash));
@@ -140,6 +149,8 @@ export const route = signal<Route>(parseRoute(window.location.hash));
 export function startApp(): void {
   window.addEventListener('hashchange', () => {
     route.value = parseRoute(window.location.hash);
+    // A message about what just happened does not survive a change of screen.
+    toast.value = null;
     window.scrollTo(0, 0);
     // Keyboard and screen-reader users land on the new page content, not back on the header.
     document.getElementById('contenu')?.focus({ preventScroll: true });
@@ -151,12 +162,3 @@ export function startApp(): void {
   });
   void loadData();
 }
-
-// ---------- Toast (one at a time) ----------
-
-export interface Toast {
-  message: string;
-  undoable: boolean;
-}
-
-export const toast = signal<Toast | null>(null);

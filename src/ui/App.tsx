@@ -14,6 +14,7 @@ import { routeHref, type Route } from './router';
 import { fr } from './strings.fr';
 import {
   appState,
+  canUndo,
   character,
   corrupt,
   data,
@@ -179,11 +180,12 @@ function Page() {
 
 function ToastBar() {
   const current = toast.value;
-  if (!current) return null;
+  // The container is always mounted: a live region inserted together with its text is not
+  // announced by most screen readers.
   return (
-    <div class="toast" role="status" aria-live="polite">
-      <span>{current.message}</span>
-      {current.undoable ? (
+    <div class="toast" role="status" aria-live="polite" hidden={!current}>
+      <span>{current?.message ?? ''}</span>
+      {current?.undoable && canUndo.value ? (
         <button
           type="button"
           class="button button--small"
@@ -195,13 +197,15 @@ function ToastBar() {
           {fr.toast.undo}
         </button>
       ) : null}
-      <button
-        type="button"
-        class="button button--small button--ghost"
-        onClick={() => (toast.value = null)}
-      >
-        {fr.toast.dismiss}
-      </button>
+      {current ? (
+        <button
+          type="button"
+          class="button button--small button--ghost"
+          onClick={() => (toast.value = null)}
+        >
+          {fr.toast.dismiss}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -210,11 +214,19 @@ export function App() {
   const state = data.value;
   return (
     <div class="layout">
-      <a class="skip-link" href="#contenu">
+      <a
+        class="skip-link"
+        href="#contenu"
+        onClick={(event) => {
+          // Never let the hash change: the router would read "#contenu" as an unknown route.
+          event.preventDefault();
+          document.getElementById('contenu')?.focus();
+        }}
+      >
         {fr.app.skipToContent}
       </a>
       <Header />
-      <ErrorBoundary>
+      <ErrorBoundary key={routeHref(route.value.t === 'notFound' ? { t: 'home' } : route.value)}>
         <main class="main" id="contenu" tabIndex={-1}>
           <Page />
         </main>
