@@ -14,7 +14,12 @@ export default defineConfig({
     sourcemap: true,
   },
   test: {
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'tests/**/*.test.ts'],
+    include: [
+      'src/**/*.test.ts',
+      'src/**/*.test.tsx',
+      'tests/**/*.test.ts',
+      'scripts/**/*.test.ts',
+    ],
     environment: 'node',
     // The ESLint guard test boots ESLint in-process; give it room on slow machines.
     testTimeout: 20_000,
