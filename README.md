@@ -21,15 +21,22 @@ npm run typecheck
 npm run lint
 npm run format
 
-npm run data:snapshot  # DofusDB → data/raw/<gameVersion>/   (jalon M1)
-npm run data:build     # data/raw + data/overrides → public/data/
-npm run data:report    # couverture des critères, incohérences, tailles
-npm run data:fixture -- --goal item:<id>
+npm run test:coverage  # couverture (src/)
+
+npm run data:snapshot  # DofusDB → data/raw/<gameVersion>/ (poli, mis en cache, reprenable)
+                       #   --dry-run : décompte des requêtes · --refresh : rejoue depuis le cache
+                       #   --only a,b · --max-requests <n> (défaut 2000)
+npm run data:build     # data/raw + data/overrides → public/data/ (déterministe, validé)
+npm run data:report    # → docs/reports/data-report-<version>.md
+npm run data:fixture -- --goal item:<id> | quest:<id> | achievement:<id>   # → tests/fixtures/
+npm run data:fixture -- --catalog                                         # tableau des plans « Dofus »
 ```
 
 Node ≥ 20 (voir `.nvmrc`).
 
 ## Documentation
+
+Licence : voir [`LICENSE.md`](LICENSE.md) (non commercial, partage à l'identique).
 
 Tout est dans [`docs/`](docs/) : [`SPEC.md`](docs/SPEC.md) (fonctionnel, moteur, jalons), [`DATA_SOURCES.md`](docs/DATA_SOURCES.md) (API DofusDB, grammaire des critères, pipeline), [`PROGRESS.md`](docs/PROGRESS.md) (état du projet), [`prompts/`](docs/prompts/) (feuille de route). Le cadre de travail est dans [`CLAUDE.md`](CLAUDE.md).
 

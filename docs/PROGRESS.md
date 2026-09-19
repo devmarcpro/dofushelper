@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**Jalon M1 terminé (2026-09-19)** : M1-2, M1-4 et M1-5 faites en mode boucle après confirmation de l'accord DofusDB. Prochaine action : **revue de fin de jalon M1** (mot-clé « revue »), puis M2 (moteur). Rien n'a été poussé.
+**Jalon M2 en cours (moteur).** Feuille de route : `docs/prompts/M2.md`, écrite par l'agent sous carte blanche. Étape courante : M2-1 (étage sémantique du parseur). M0 et M1 sont terminés ; premier `git push` fait par l'agent le 2026-09-19 sur délégation de Marc.
 
 ## Étapes
 
@@ -16,7 +16,13 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M1-3 — Parseur syntaxique des critères (sans réseau) · 2026-09-18 · commit `5a6ba9d`
 - [x] M1-4 — Compilation v0 et rapport · 2026-09-19 · commits `70b9a26`, `14419ae` · 100 % des critères analysés, dataset 835 Ko gzip
 - [x] M1-5 — Tranches verticales et fixtures · 2026-09-19 · Dotruche (5 nœuds), quête 1329, Dofus des Glaces (50 nœuds)
-- [ ] Revue de fin de jalon M0, puis M1
+- [x] Revue de fin de jalon M0 et M1 · 2026-09-19 · M1 : 4 critères sur 4 ; M0 : CI à constater après le push
+- [ ] M2-1 — Étage sémantique du parseur (`toRequirement`)
+- [ ] M2-2 — Graphe et progression effective
+- [ ] M2-3 — Résolution, points de choix, ordonnancement
+- [ ] M2-4 — Besoins et conditions
+- [ ] M2-5 — Intégration au dataset et test de fumée
+- [ ] Revue de fin de jalon M2
 
 ## Décisions de Marc
 
@@ -78,6 +84,17 @@ Restent à Marc : contrôle visuel à 380 px, premier `git push`, réglages GitH
 - `data/overrides/*.json` créés vides ; `data:build` échoue si un override vise un id absent ou n'a pas `reason` et `source`.
 - `data:fixture` lit `public/data/` ; `--catalog` imprime le tableau des plans. Fermeture des prérequis dans `scripts/build-data/subgraph.ts` (provisoire : le vrai graphe arrive en M2 dans `src/core`).
 - Écarts assumés avec la SPEC, listés dans `DATA_NOTES.md` §13 et §16 : **Marc doit les reporter dans `docs/SPEC.md`** (l'agent ne modifie pas la SPEC).
+
+## Décisions du 2026-09-19 (carte blanche réaffirmée : « c'est à toi de trancher »)
+
+Marc ne veut plus de questions en fin de tour : l'agent décide, agit et consigne ici ; Marc peut tout renverser après coup.
+
+1. **Licence du dépôt** : `LICENSE.md`. Données sous LPNC-IA 1.0 (DofusDB), code et documentation sous CC BY-NC-SA 4.0, pour rester non commercial et en partage à l'identique.
+2. **`git push`** : délégué à l'agent. Premier push de `main` vers `origin`. Les réglages GitHub Pages (README « Déploiement ») restent manuels côté Marc, l'agent n'y a pas accès.
+3. **Quêtes événementielles et répétables** : conservées dans les plans qui les exigent, jamais proposées au catalogue, masquées par défaut dans la saisie en masse (M4).
+4. **Feuille de route M2** : `docs/prompts/M2.md`, cinq étapes puis revue.
+5. **Nettoyage de la revue M1** : `scripts/not-implemented.mjs` supprimé, README mis à jour. Le niveau des monstres (`grades`) sera ajouté au snapshot quand M2-4 en aura besoin.
+6. **SPEC** : l'agent ne la modifie toujours pas ; les écarts sont dans `DATA_NOTES.md` §13 et §16.
 
 ## Notes de reprise
 
