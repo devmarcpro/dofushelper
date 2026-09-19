@@ -5,6 +5,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { buildGraph } from '../../src/core/graph';
 import { compileDataset } from './compile';
 import {
   citedIds,
@@ -238,8 +239,54 @@ async function main(): Promise<void> {
     '',
   );
 
+  // ---------- Oracle: DofusDB's `need` aggregate vs our direct prerequisites ----------
+  const graph = buildGraph(dataset);
+  const oracle = { compared: 0, equal: 0, oursOnly: 0, theirsOnly: 0, examples: [] as string[] };
+  const compareNeed = (
+    key: `q:${number}` | `a:${number}`,
+    label: string,
+    need: { quests: number[]; achievements: number[] } | null,
+  ): void => {
+    const node = graph.nodes.get(key);
+    if (!node || !need) return;
+    const ours = new Set<string>([...node.mandatory, ...node.alternative]);
+    const theirs = new Set<string>([
+      ...need.quests.map((id) => `q:${id}`),
+      ...need.achievements.map((id) => `a:${id}`),
+    ]);
+    if (ours.size === 0 && theirs.size === 0) return;
+    oracle.compared += 1;
+    const oursOnly = [...ours].filter((k) => !theirs.has(k));
+    const theirsOnly = [...theirs].filter((k) => !ours.has(k));
+    if (oursOnly.length === 0 && theirsOnly.length === 0) {
+      oracle.equal += 1;
+      return;
+    }
+    if (oursOnly.length > 0) oracle.oursOnly += 1;
+    if (theirsOnly.length > 0) oracle.theirsOnly += 1;
+    if (oracle.examples.length < 12) {
+      oracle.examples.push(
+        `${label} : chez nous seulement [${oursOnly.slice(0, 6).join(', ')}] · chez DofusDB seulement [${theirsOnly.slice(0, 6).join(', ')}]`,
+      );
+    }
+  };
+  for (const q of dataset.quests) compareNeed(`q:${q.id}`, `quête ${q.id}`, q.dbNeed);
+  for (const a of dataset.achievements) compareNeed(`a:${a.id}`, `succès ${a.id}`, a.dbNeed);
+  lines.push(
+    '## 5. Oracle `need` de DofusDB',
+    '',
+    'Comparaison, nœud par nœud, entre nos prérequis directs (arêtes obligatoires et alternatives du graphe) et les listes `need.quests` / `need.achievements` précalculées par DofusDB.',
+    '',
+    `- Nœuds comparés (au moins un prérequis d'un côté) : **${oracle.compared}**`,
+    `- Identiques : **${oracle.equal}** (${pct(oracle.compared === 0 ? 1 : oracle.equal / oracle.compared)})`,
+    `- Avec des prérequis chez nous seulement : ${oracle.oursOnly} · chez DofusDB seulement : ${oracle.theirsOnly}`,
+    '',
+    ...oracle.examples.map((e) => `- ${e}`),
+    '',
+  );
+
   // ---------- Warnings, overrides ----------
-  lines.push('## 5. Avertissements de compilation', '');
+  lines.push('## 6. Avertissements de compilation', '');
   if (errors.length + warnings.length === 0) lines.push('Aucun.', '');
   for (const e of errors) lines.push(`- **ERREUR** ${e}`);
   for (const w of warnings) lines.push(`- ${w}`);
@@ -247,7 +294,7 @@ async function main(): Promise<void> {
 
   // ---------- File weights ----------
   lines.push(
-    '## 6. Poids des fichiers de `public/data/`',
+    '## 7. Poids des fichiers de `public/data/`',
     '',
     '| Fichier | Brut (octets) | gzip (octets) |',
     '|---|---:|---:|',

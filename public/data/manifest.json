@@ -1,24 +1,24 @@
 {
-  "format": 0,
+  "format": 1,
   "gameVersion": "3.6.11.15",
   "lang": "fr",
-  "builtAt": "2026-09-19T08:09:52.211Z",
+  "builtAt": "2026-09-19T09:33:00.243Z",
   "attribution": "Données issues de DofusDB. Utilisation soumise à la LPNC-IA 1.0.",
   "files": [
     {
       "file": "quests.json",
-      "bytes": 3679893,
-      "sha256": "481b68cd27989b6968f40a4fbdf8ded641e8cd89b6a3e4d9e5d5f5e874d8d4cf"
+      "bytes": 3509955,
+      "sha256": "62c650277ccbea11db56cdcf4b3dae22bfa6358d842f534ea54b6f6c862de1cc"
     },
     {
       "file": "achievements.json",
-      "bytes": 2526978,
-      "sha256": "733aa608af1c7e8ee13acf5effdbcfc2111e9c27d914603dc3b0d1f3ea5eef18"
+      "bytes": 2210581,
+      "sha256": "b6fdf0c2df1dcccb840b72fe7eb1770b0afa4462cbbb1b23fcbbe9c7ee052277"
     },
     {
       "file": "items.json",
-      "bytes": 940131,
-      "sha256": "279e35ea45b5e524397d2a9663be874136689f6807da8f3a6a82905065030812"
+      "bytes": 927452,
+      "sha256": "6b89411d8898554427a92176b3aeca72e9967943a83024a9be65a315c10bf559"
     },
     {
       "file": "monsters.json",

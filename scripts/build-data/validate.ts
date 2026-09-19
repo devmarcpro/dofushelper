@@ -57,7 +57,7 @@ export function validateDataset(dataset: CompiledDataset): string[] {
   }
 
   const criterion: Check = (v) =>
-    isObj(v) && isStr((v as { raw?: unknown }).raw) && isObjOrNull((v as { ast?: unknown }).ast);
+    isObj(v) && isStr((v as { raw?: unknown }).raw) && isObj((v as { req?: unknown }).req);
   const reward: Check = (v) =>
     isObj(v) &&
     ['items', 'titles', 'ornaments', 'emotes', 'spells'].every((k) =>

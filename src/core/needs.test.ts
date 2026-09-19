@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import dotruche from '../../tests/fixtures/item-15235-dotruche.json';
 import iceDofus from '../../tests/fixtures/item-7043-dofus-des-glaces.json';
 import quest1329 from '../../tests/fixtures/quest-1329-le-dofus-des-glaces.json';
-import { parseCriterionSyntax } from './criteria';
+import { compileCriterion } from './criterion';
 import type { CompiledDataset, CompiledQuest, CompiledStep, RewardBand } from './dataset';
 import { buildGraph } from './graph';
 import { computeNeeds, rewardItemsForLevel, type NeedsIndex } from './needs';
@@ -44,7 +44,6 @@ function step(id: number, objectives: Objective[], rewardBands: RewardBand[] = [
 }
 
 function quest(id: number, start: string, steps: CompiledStep[]): CompiledQuest {
-  const parsed = parseCriterionSyntax(start);
   return {
     id,
     name: `FAKE quête ${id}`,
@@ -56,7 +55,7 @@ function quest(id: number, start: string, steps: CompiledStep[]): CompiledQuest 
     isEvent: false,
     repeatType: 0,
     repeatLimit: 1,
-    start: parsed.ok ? { raw: start, ast: parsed.value } : { raw: start, ast: null },
+    start: compileCriterion(start),
     startPositions: [],
     steps,
     rewards: noReward,

@@ -1,9 +1,9 @@
 /**
  * Shape of the compiled dataset served from public/data/ (DATA_SOURCES.md §6).
- * v0 (M1-4): every criterion is stored raw and as a syntactic AST. M2 replaces the AST
- * by a compiled Requirement (decision recorded in docs/PROGRESS.md).
+ * Format 1 (M2-5): every criterion is stored raw and as a compiled Requirement, so the browser
+ * has nothing to parse. Format 0 (M1-4) stored the syntactic AST instead.
  */
-import type { CriterionAst, ParseError } from './criteria';
+import type { ParseError } from './criteria';
 import type {
   AchievementId,
   DungeonId,
@@ -13,15 +13,16 @@ import type {
   NpcId,
   Objective,
   QuestId,
+  Requirement,
   Reward,
 } from './types';
 
-export const DATASET_FORMAT = 0;
+export const DATASET_FORMAT = 1;
 
 export interface CompiledCriterion {
   raw: string;
-  /** null when the string does not parse; `error` then says where. */
-  ast: CriterionAst | null;
+  /** `unknown` when the string does not parse; `error` then says where. */
+  req: Requirement;
   error?: ParseError;
 }
 

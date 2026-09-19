@@ -3,10 +3,9 @@
  * No file system, no clock: deterministic by construction. Unexpected shapes never throw
  * (golden rule 7): they are skipped and reported in `warnings`.
  */
-import { parseCriterionSyntax } from '../../src/core/criteria';
+import { compileCriterion } from '../../src/core/criterion';
 import type {
   CompiledAchievement,
-  CompiledCriterion,
   CompiledDataset,
   CompiledDungeon,
   CompiledItem,
@@ -57,10 +56,7 @@ const numList = (v: unknown): number[] =>
     .sort((a, b) => a - b);
 const byId = <T extends { id: number }>(list: T[]): T[] => list.sort((a, b) => a.id - b.id);
 
-export function compileCriterion(raw: string): CompiledCriterion {
-  const parsed = parseCriterionSyntax(raw);
-  return parsed.ok ? { raw, ast: parsed.value } : { raw, ast: null, error: parsed.error };
-}
+export { compileCriterion };
 
 function emptyReward(): Reward {
   return { items: [], titles: [], ornaments: [], emotes: [], spells: [] };

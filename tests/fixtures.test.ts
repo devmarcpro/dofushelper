@@ -44,16 +44,14 @@ describe('quest 1329 « Le Dofus des Glaces »', () => {
   const quest = dataset.quests.find((q) => q.id === 1329);
 
   it('has 28 direct mandatory Qf prerequisites and one choice group of 3', () => {
-    const ast = quest?.start.ast;
-    expect(ast?.k).toBe('and');
-    if (ast?.k !== 'and') return;
-    const atoms = ast.items.filter((i) => i.k === 'atom');
-    expect(atoms).toHaveLength(28);
-    expect(atoms.every((a) => a.k === 'atom' && a.key === 'Qf' && a.op === '=')).toBe(true);
-    const groups = ast.items.filter((i) => i.k !== 'atom');
+    const req = quest?.start.req;
+    expect(req?.t).toBe('all');
+    if (req?.t !== 'all') return;
+    expect(req.of.filter((r) => r.t === 'questDone')).toHaveLength(28);
+    const groups = req.of.filter((r) => r.t === 'any');
     expect(groups).toHaveLength(1);
-    expect(groups[0]?.k).toBe('or');
-    expect(prerequisiteKeys({ raw: '', ast: groups[0] ?? null })).toEqual([
+    const group = groups[0];
+    expect(group ? prerequisiteKeys({ raw: '', req: group }) : []).toEqual([
       'q:710',
       'q:711',
       'q:1316',

@@ -241,11 +241,11 @@ describe('compileDataset', () => {
     expect(warnings.some((w) => w.includes('sans id'))).toBe(true);
   });
 
-  it('stores each criterion raw and as an AST, or with its parse error', () => {
+  it('stores each criterion raw and as a Requirement, or as unknown with its parse error', () => {
     expect(questB?.start.raw).toBe('PL>9&(Qf=9000001|Qf=9000003)');
-    expect(questB?.start.ast?.k).toBe('and');
+    expect(questB?.start.req.t).toBe('all');
     const broken = dataset.quests.find((q) => q.id === 9000003);
-    expect(broken?.start.ast).toBeNull();
+    expect(broken?.start.req).toEqual({ t: 'unknown', raw: 'PL>>' });
     expect(broken?.start.error?.pos).toBe(3);
     expect(broken?.steps).toEqual([]);
   });
@@ -308,11 +308,11 @@ describe('compileDataset', () => {
   it('compiles achievements: ordered objectives, missing ones listed, rewards merged', () => {
     const achievement = dataset.achievements[0];
     expect(achievement?.objectives.map((o) => o.id)).toEqual([9000301, 9000302]);
-    expect(achievement?.objectives[1]?.criterion.ast).toMatchObject({
-      k: 'atom',
-      key: 'EM',
-      args: [9300001, 0, 'd'],
+    expect(achievement?.objectives[1]?.criterion.req).toEqual({
+      t: 'unknown',
+      raw: 'EM>9300001,0,d',
     });
+    expect(achievement?.objectives[0]?.criterion.req).toEqual({ t: 'questDone', id: 9000002 });
     expect(achievement?.missingObjectiveIds).toEqual([9000303]);
     expect(achievement?.rewards).toEqual({
       items: [{ itemId: 9100004, qty: 1 }],
@@ -329,7 +329,7 @@ describe('compileDataset', () => {
       isQuestItem: true,
       recipe: { jobId: 9900001, ingredients: [[9100006, 3]] },
     });
-    expect(questItem?.criterion?.ast).toMatchObject({ key: 'cw', op: '<', args: [25] });
+    expect(questItem?.criterion?.req).toEqual({ t: 'unknown', raw: 'cw<25' });
     expect(dataset.items.find((i) => i.id === 9100002)?.isQuestItem).toBe(false);
     expect(dataset.monsters[0]?.drops).toEqual([[9100002, [10, 12, 14, 16, 18]]]);
   });

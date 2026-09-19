@@ -306,7 +306,28 @@ Objectifs : **15543** · part typée : **63.36 %** (le reste est compilé en `ot
 - PNJ : 22 (6777, 7123, 7173, 7174, 7175, 7181, 7186, 7187, 7188, 7189, 7190, 7191, …)
 - Objectifs de succès listés mais absents en amont : 322
 
-## 5. Avertissements de compilation
+## 5. Oracle `need` de DofusDB
+
+Comparaison, nœud par nœud, entre nos prérequis directs (arêtes obligatoires et alternatives du graphe) et les listes `need.quests` / `need.achievements` précalculées par DofusDB.
+
+- Nœuds comparés (au moins un prérequis d'un côté) : **1956**
+- Identiques : **1800** (92.02 %)
+- Avec des prérequis chez nous seulement : 30 · chez DofusDB seulement : 126
+
+- quête 318 : chez nous seulement [q:333] · chez DofusDB seulement []
+- quête 319 : chez nous seulement [q:317] · chez DofusDB seulement []
+- quête 421 : chez nous seulement [q:120] · chez DofusDB seulement []
+- quête 422 : chez nous seulement [q:123] · chez DofusDB seulement []
+- quête 423 : chez nous seulement [q:121] · chez DofusDB seulement []
+- quête 424 : chez nous seulement [q:124] · chez DofusDB seulement []
+- quête 425 : chez nous seulement [q:122] · chez DofusDB seulement []
+- quête 426 : chez nous seulement [q:125] · chez DofusDB seulement []
+- quête 495 : chez nous seulement [] · chez DofusDB seulement [q:890]
+- quête 496 : chez nous seulement [] · chez DofusDB seulement [q:890]
+- quête 497 : chez nous seulement [] · chez DofusDB seulement [q:890]
+- quête 498 : chez nous seulement [] · chez DofusDB seulement [q:890]
+
+## 6. Avertissements de compilation
 
 - objet Dofus 7754 « Dofus Ocre » sans source : absent du catalogue
 - objet Dofus 8072 « Dofus Kaliptus » sans source : absent du catalogue
@@ -318,18 +339,18 @@ Objectifs : **15543** · part typée : **63.36 %** (le reste est compilé en `ot
 - objet Dofus 29135 « Dofus Verdoyant » sans source : absent du catalogue
 - objet Dofus 30356 « Jyfus » sans source : absent du catalogue
 
-## 6. Poids des fichiers de `public/data/`
+## 7. Poids des fichiers de `public/data/`
 
 | Fichier | Brut (octets) | gzip (octets) |
 |---|---:|---:|
-| quests.json | 3679893 | 364284 |
-| achievements.json | 2526978 | 252468 |
-| items.json | 940131 | 124353 |
+| quests.json | 3509955 | 355149 |
+| achievements.json | 2210581 | 227607 |
+| items.json | 927452 | 123221 |
 | monsters.json | 485997 | 49805 |
 | dungeons.json | 30218 | 6530 |
 | refs.json | 112984 | 32243 |
 | goals.json | 2919 | 549 |
-| **Total** | **7779120** | **830232** |
+| **Total** | **7280106** | **795104** |
 
-Cible SPEC §11 : ≤ 1500000 octets gzip pour le premier plan → **respectée** (55.35 % de la cible, tous fichiers confondus).
+Cible SPEC §11 : ≤ 1500000 octets gzip pour le premier plan → **respectée** (53.01 % de la cible, tous fichiers confondus).
 

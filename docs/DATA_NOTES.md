@@ -237,3 +237,23 @@ Fixtures versionnées dans `tests/fixtures/` : `item-15235-dotruche.json` (14 Ko
 5. §5 `Objective` : variantes `bringSoul` et `craft` ajoutées ; `killMonster` porte `mapId` et `dungeonIds` ; chaque objectif garde `id` et `text` (texte du jeu avec balises `{npc,id}`…). 36,6 % des objectifs sont de type 0 (texte libre) et restent `other`.
 6. §6.6 donjons : le lien vient de `objective.dungeonIds` (donnée amont) plutôt que d'une déduction par monstre.
 7. §11 poids : 835 Ko gzip pour tout le dataset (55 % de la cible) ; un découpage n'est pas nécessaire au MVP.
+
+## 17. Moteur sur données réelles (M2, 2026-09-19)
+
+**Format du dataset : 1.** Chaque critère est stocké `{ raw, req }` où `req` est le `Requirement` compilé au build (`src/core/criterion.ts`) ; l'AST du format 0 a disparu. Un critère qui ne s'analyse pas devient `{ t: 'unknown', raw }` avec son `error`. Le dataset pèse moins qu'en format 0 (`quests.json` 3,5 Mo bruts contre 3,7).
+
+**Test de fumée** (`tests/smoke.test.ts`, exécuté en CI sur `public/data/`) : 4 781 objectifs résolus (1 976 quêtes, 2 780 succès, 25 Dofus) sans aucune exception, **0 cycle** et **0 nœud manquant** rencontrés. `buildGraph` et les index : **56 ms** pour 4 756 nœuds (cible 300 ms). `resolve` (plan + besoins) : **0,28 ms en moyenne**, **10 ms au pire** (succès 839, plan de 353 nœuds ; cible 50 ms). Mesures sur la machine de dev, pas sur téléphone.
+
+**Oracle `need`** (rapport §5). Sur 1 956 nœuds ayant au moins un prérequis d'un côté, **1 800 sont identiques (92 %)**. Les écarts ont deux causes, toutes deux vérifiées sur les critères bruts :
+
+- 126 nœuds où DofusDB liste une quête que nous n'avons pas : le critère est `Qa=<id>` ou `Qc=<id>` (« quête en cours » / « quête lançable »). Nous les classons en `context` : un plan ne sait pas suivre l'état « en cours ». Ils restent affichés sur la ligne de la quête.
+- 30 nœuds où nous avons une quête que DofusDB n'a pas : le critère est `QF>id,0` (« terminée plus de 0 fois »), que nous lisons comme `questDone`.
+
+Aucun écart ne vient d'une erreur d'analyse. `need` inclut toutes les branches des `|` : c'est pourquoi la comparaison porte sur arêtes obligatoires **et** alternatives.
+
+**Choix de moteur à connaître.**
+
+- Un succès dont tous les objectifs sont des `Qf=` / `OA=` sous `all`, sans objectif manquant en amont, est **déductible** : il passe en « déduit » quand ses objectifs sont faits, et le cocher déduit toute sa chaîne. C'est ce qui relie « j'ai le Dofus des Glaces » (succès 922) à la quête 1329 et à ses 43 quêtes.
+- Points de choix : identifiant `<nœud porteur>#<position dans le critère>` (ex. `q:1329#0.24`), stable tant que le critère du jeu ne change pas. Branche retenue : déjà faite › choix du joueur › seule branche compatible avec le profil renseigné › moins de nœuds restants.
+- Un `any` sans aucun nœud (ex. les trois cartes de la quête 1317) n'est pas un point de choix : il ne bloque que si **toutes** ses branches contredisent le profil renseigné.
+- Récompenses par tranche de niveau : tranche du niveau du personnage, ou minimum garanti par toutes les tranches quand le niveau n'est pas renseigné.

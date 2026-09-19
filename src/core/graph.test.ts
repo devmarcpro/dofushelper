@@ -1,16 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import iceDofus from '../../tests/fixtures/item-7043-dofus-des-glaces.json';
 import quest1329 from '../../tests/fixtures/quest-1329-le-dofus-des-glaces.json';
-import { parseCriterionSyntax } from './criteria';
+import { compileCriterion } from './criterion';
 import type { CompiledAchievement, CompiledDataset, CompiledQuest } from './dataset';
 import { buildGraph } from './graph';
 import { computeEffectiveDone } from './progress';
 
 const noReward = { items: [], titles: [], ornaments: [], emotes: [], spells: [] };
-const criterion = (raw: string) => {
-  const parsed = parseCriterionSyntax(raw);
-  return parsed.ok ? { raw, ast: parsed.value } : { raw, ast: null, error: parsed.error };
-};
+const criterion = compileCriterion;
 
 /** Synthetic nodes: ids ≥ 9 000 000 and FAKE names (CLAUDE.md, golden rule 4). */
 function fakeQuest(id: number, start: string): CompiledQuest {

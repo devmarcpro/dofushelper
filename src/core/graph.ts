@@ -4,7 +4,6 @@
  * leaf only crosses `all`, ALTERNATIVE when it crosses an `any`. A path through a `not` never
  * creates an edge: a negated quest state is a mutual exclusion, kept aside for display.
  */
-import { toRequirement } from './criteria';
 import type { CompiledCriterion, CompiledDataset } from './dataset';
 import type { NodeKey, Requirement } from './types';
 
@@ -46,7 +45,7 @@ export function achievementKey(id: number): NodeKey {
 }
 
 export function criterionRequirement(criterion: CompiledCriterion): Requirement {
-  return criterion.ast ? toRequirement(criterion.ast) : { t: 'unknown', raw: criterion.raw };
+  return criterion.req;
 }
 
 export function leafKey(requirement: Requirement): NodeKey | null {

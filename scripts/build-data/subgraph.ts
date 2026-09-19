@@ -4,13 +4,14 @@
  * plus the entities those nodes reference. Cycles and missing ids never throw.
  * The real engine (graph, choice points, statuses) arrives in M2 in src/core.
  */
-import type { CriterionAst } from '../../src/core/criteria';
+import { parseCriterionSyntax, type CriterionAst } from '../../src/core/criteria';
 import type {
   CompiledAchievement,
   CompiledCriterion,
   CompiledDataset,
   CompiledQuest,
 } from '../../src/core/dataset';
+import type { Requirement } from '../../src/core/types';
 
 export type NodeKey = `q:${number}` | `a:${number}`;
 
@@ -20,17 +21,13 @@ export type GoalSpec =
 /** Positive prerequisites of a criterion. Negated atoms (`Qf!216`) are exclusions, not prerequisites. */
 export function prerequisiteKeys(criterion: CompiledCriterion | null | undefined): NodeKey[] {
   const keys: NodeKey[] = [];
-  const visit = (ast: CriterionAst): void => {
-    if (ast.k !== 'atom') {
-      for (const item of ast.items) visit(item);
-      return;
-    }
-    const id = ast.args[0];
-    if (typeof id !== 'number' || ast.op === '!') return;
-    if (ast.key === 'Qf' || ast.key === 'QF') keys.push(`q:${id}`);
-    else if (ast.key === 'OA') keys.push(`a:${id}`);
+  const visit = (req: Requirement): void => {
+    if (req.t === 'all' || req.t === 'any') req.of.forEach(visit);
+    else if (req.t === 'questDone') keys.push(`q:${req.id}`);
+    else if (req.t === 'achievementDone') keys.push(`a:${req.id}`);
+    // `not` is an exclusion, never a prerequisite
   };
-  if (criterion?.ast) visit(criterion.ast);
+  if (criterion) visit(criterion.req);
   return keys;
 }
 
@@ -116,7 +113,9 @@ export function extractSubgraph(
       if (['DD', 'DH', 'DM'].includes(ast.key) && typeof second === 'number') itemIds.add(second);
       if (ast.key === 'EM' && typeof first === 'number') monsterIds.add(first);
     };
-    if (criterion?.ast) visit(criterion.ast);
+    // Item and monster ids live in keys the engine does not interpret (HD, EM, DD…): read the raw string.
+    const parsed = criterion ? parseCriterionSyntax(criterion.raw) : null;
+    if (parsed?.ok) visit(parsed.value);
   };
 
   for (const quest of quests) {
