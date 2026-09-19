@@ -8,6 +8,8 @@ export type Route =
   | { t: 'catalog' }
   | { t: 'characters' }
   | { t: 'about' }
+  | { t: 'search' }
+  | { t: 'bulk' }
   | { t: 'plan'; goal: Goal; tab: PlanTab }
   | { t: 'node'; key: NodeKey }
   | { t: 'notFound'; hash: string };
@@ -39,6 +41,10 @@ export function parseRoute(hash: string): Route {
       return { t: 'characters' };
     case 'a-propos':
       return { t: 'about' };
+    case 'recherche':
+      return { t: 'search' };
+    case 'saisie':
+      return { t: 'bulk' };
     case 'plan': {
       const goal = parseGoal(second);
       const tab = TABS.find((t) => t === third) ?? 'steps';
@@ -65,6 +71,10 @@ export function routeHref(route: Exclude<Route, { t: 'notFound' }>): string {
       return '#/personnages';
     case 'about':
       return '#/a-propos';
+    case 'search':
+      return '#/recherche';
+    case 'bulk':
+      return '#/saisie';
     case 'plan':
       return route.tab === 'steps'
         ? `#/plan/${goalSlug(route.goal)}`

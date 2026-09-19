@@ -110,6 +110,32 @@ export function setNodeDone(
   });
 }
 
+/** Ticks or unticks many nodes in ONE state change, so that a single undo restores everything. */
+export function setManyNodesDone(
+  state: AppState,
+  id: string,
+  keys: readonly NodeKey[],
+  done: boolean,
+  deps: StateDeps,
+): AppState {
+  return updateOne(state, id, deps, (c) => {
+    const quests = new Set(c.doneQuests);
+    const achievements = new Set(c.doneAchievements);
+    let changed = false;
+    for (const key of keys) {
+      const target = key.startsWith('q:') ? quests : achievements;
+      const nodeId = Number(key.slice(2));
+      if (target.has(nodeId) === done) continue;
+      if (done) target.add(nodeId);
+      else target.delete(nodeId);
+      changed = true;
+    }
+    if (!changed) return c;
+    const sorted = (set: Set<number>): number[] => [...set].sort((a, b) => a - b);
+    return { ...c, doneQuests: sorted(quests), doneAchievements: sorted(achievements) };
+  });
+}
+
 export function setOwnedQuantity(
   state: AppState,
   id: string,

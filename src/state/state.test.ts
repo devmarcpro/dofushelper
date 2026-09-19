@@ -7,6 +7,7 @@ import {
   removeGoal,
   setActiveCharacter,
   setChoice,
+  setManyNodesDone,
   setNodeDone,
   setOwnedQuantity,
   updateCharacter,
@@ -88,6 +89,31 @@ describe('actions', () => {
     });
     next = setNodeDone(next, id, 'q:9000002', false, deps);
     expect(activeCharacter(next)?.doneQuests).toEqual([9000001]);
+  });
+
+  it('ticks many nodes in one change, so that one undo restores everything', () => {
+    const { state, deps, id } = seeded();
+    const one = setNodeDone(state, id, 'q:9000001', true, deps);
+    const many = setManyNodesDone(
+      one,
+      id,
+      ['q:9000003', 'q:9000001', 'a:9000201', 'q:9000002'],
+      true,
+      deps,
+    );
+    expect(activeCharacter(many)).toMatchObject({
+      doneQuests: [9000001, 9000002, 9000003],
+      doneAchievements: [9000201],
+    });
+    expect(setManyNodesDone(many, id, ['q:9000001'], true, deps)).toBe(many);
+    const none = setManyNodesDone(
+      many,
+      id,
+      ['q:9000001', 'q:9000002', 'q:9000003', 'a:9000201'],
+      false,
+      deps,
+    );
+    expect(activeCharacter(none)).toMatchObject({ doneQuests: [], doneAchievements: [] });
   });
 
   it('stores owned quantities, removing zero and rejecting negatives', () => {

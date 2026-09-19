@@ -7,6 +7,8 @@ describe('router', () => {
     { t: 'catalog' },
     { t: 'characters' },
     { t: 'about' },
+    { t: 'search' },
+    { t: 'bulk' },
     { t: 'plan', goal: { t: 'item', itemId: 9100001 }, tab: 'steps' },
     { t: 'plan', goal: { t: 'quest', id: 9000001 }, tab: 'gather' },
     { t: 'plan', goal: { t: 'achievement', id: 9000201 }, tab: 'choices' },

@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import type { CompiledDataset } from '../src/core/dataset';
 import { createEngine } from '../src/core/engine';
 import type { Character, Goal } from '../src/core/types';
+import { buildSearchIndex, search } from '../src/ui/search';
 
 const read = <T>(file: string): T =>
   JSON.parse(readFileSync(path.join('public', 'data', file), 'utf8')) as T;
@@ -38,6 +39,21 @@ const character: Character = {
   choices: {},
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
+
+describe('search on the full dataset', () => {
+  it('indexes every quest, achievement and catalog goal, and answers quickly', () => {
+    const index = buildSearchIndex(dataset);
+    expect(index.length).toBeGreaterThan(4000);
+    const start = performance.now();
+    const hits = search(index, 'dofus des glaces');
+    const ms = performance.now() - start;
+    console.log(`search over ${index.length} entries: ${ms.toFixed(2)} ms, ${hits.length} hits`);
+    expect(hits.some((e) => e.kind === 'quest' && e.id === 1329)).toBe(true);
+    expect(hits.some((e) => e.kind === 'goal' && e.id === 7043)).toBe(true);
+    // Target: 20 ms (docs/prompts/M4.md). Loose guard for slow CI runners.
+    expect(ms).toBeLessThan(500);
+  });
+});
 
 describe('smoke test on the full dataset', () => {
   const buildStart = performance.now();

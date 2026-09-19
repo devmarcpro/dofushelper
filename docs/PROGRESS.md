@@ -4,9 +4,9 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**Jalon M3 terminé (2026-09-19) : MVP fonctionnel.** Interface complète sur le moteur : coquille, routeur hash, personnages, catalogue, accueil, plan en quatre onglets, fiches, persistance, export/import, undo, frontière d'erreur. 287 tests verts, JS initial 26 Ko gzip. Tout est poussé sur `origin/main`. Prochaine étape : M4 (confort), à cadrer dans `docs/prompts/M4.md`.
+**Jalon M4 terminé (2026-09-19) : confort.** Recherche globale, catalogue à trois onglets (Dofus, Succès, Quêtes), saisie rapide par catégorie en une action annulable. **Le site est en ligne** : https://devmarcpro.github.io/dofushelper/ (Marc a activé GitHub Pages ; `ci` et `deploy` verts). Prochaine étape : M5 (finitions : overrides outillés, liens soluces si accord, PWA hors ligne, passe accessibilité et performance), à cadrer dans `docs/prompts/M5.md`.
 
-**Deux vérifications que seul Marc peut faire** : (1) activer GitHub Pages (Settings → Pages → Source « GitHub Actions ») pour que `deploy` publie le site ; (2) regarder le site à 380 px de large dans un vrai navigateur (`npm run dev`) : l'agent n'a qu'un DOM simulé, il a vérifié le rendu, les interactions et l'absence de largeur fixe, pas l'aspect visuel.
+**Reste à Marc** : regarder le site en ligne sur téléphone (380 px) ; vérifier dans un navigateur les motifs d'URL des pages DofusDB (DATA_SOURCES §2.6) pour débloquer les liens sortants ; reporter dans `docs/SPEC.md` les écarts listés dans `DATA_NOTES.md` §13 et §16.
 
 ## Étapes
 
@@ -32,6 +32,10 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M3-5 — Écran plan : à réunir et conditions ; fiche quête/succès · 2026-09-19 · aucun lien sortant tant que les URL DofusDB ne sont pas vérifiées
 - [x] M3-6 — Accessibilité, 380 px, poids du JS, frontière d'erreur · 2026-09-19 · 26 Ko gzip ; contrôle visuel à faire par Marc
 - [x] Revue de fin de jalon M3 · 2026-09-19 · parcours P1 à P7 couverts par le test d'interface, sauf l'aspect visuel
+- [x] M4-1 — Recherche globale · 2026-09-19 · index pur, sans accents ni casse
+- [x] M4-2 — Catalogue : succès et quêtes · 2026-09-19
+- [x] M4-3 — Saisie rapide par catégorie · 2026-09-19 · action `setManyNodesDone`, un seul undo
+- [x] Revue de fin de jalon M4 · 2026-09-19 · fiches navigables déjà livrées en M3-5
 
 ## Décisions de Marc
 

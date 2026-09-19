@@ -20,6 +20,7 @@ import {
 import { emptyState, type AppState, type StateDeps } from '../state/types';
 import { createLabels, type Labels } from './labels';
 import { parseRoute, type Route } from './router';
+import { buildSearchIndex, type SearchEntry } from './search';
 
 export const deps: StateDeps = {
   now: () => new Date().toISOString(),
@@ -115,6 +116,10 @@ export const engine = computed<Engine | null>(() =>
 );
 export const labels = computed<Labels | null>(() =>
   data.value.t === 'ready' ? createLabels(data.value.dataset) : null,
+);
+
+export const searchIndex = computed<SearchEntry[]>(() =>
+  data.value.t === 'ready' ? buildSearchIndex(data.value.dataset) : [],
 );
 
 export async function loadData(): Promise<void> {

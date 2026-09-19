@@ -456,3 +456,9 @@ code {
   flex: 1;
   min-width: 10rem;
 }
+
+.tab[aria-pressed='true'] {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  font-weight: 600;
+}

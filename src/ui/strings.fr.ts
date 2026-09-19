@@ -16,6 +16,46 @@ export const fr = {
     catalog: 'Objectifs',
     characters: 'Personnages',
     about: 'À propos',
+    search: 'Recherche',
+    bulk: 'Saisie rapide',
+  },
+  search: {
+    title: 'Recherche',
+    label: 'Rechercher une quête, un succès ou un Dofus',
+    placeholder: 'Nom, même partiel',
+    hint: 'Tape au moins deux caractères. Les accents et la casse ne comptent pas.',
+    none: 'Aucun résultat.',
+    count: (n: number, limited: boolean) =>
+      limited
+        ? `${n} premiers résultats : précise ta recherche pour en voir moins.`
+        : `${n} ${plural(n, 'résultat', 'résultats')}`,
+    kinds: { goal: 'Dofus', quest: 'Quêtes', achievement: 'Succès' } as Record<string, string>,
+    openPlan: 'Ouvrir le plan',
+    openSheet: 'Voir la fiche',
+  },
+  bulk: {
+    title: 'Saisie rapide',
+    intro:
+      'Coche d’un coup ce que tu as déjà fait. Cocher une quête marque aussi ses prérequis obligatoires comme faits.',
+    needCharacter: 'Crée d’abord un personnage pour enregistrer ta progression.',
+    kind: 'Type',
+    quests: 'Quêtes',
+    achievements: 'Succès',
+    category: 'Catégorie',
+    chooseCategory: 'Choisis une catégorie',
+    categoryOption: (name: string, count: number) => `${name} (${count})`,
+    uncategorized: 'Sans catégorie',
+    showSpecial: 'Afficher les quêtes événementielles et répétables',
+    summary: (done: number, total: number) =>
+      `${done} sur ${total} déjà faits dans cette catégorie`,
+    tickAll: (n: number) => `Tout cocher (${n})`,
+    untickAll: (n: number) => `Tout décocher (${n})`,
+    empty: 'Rien à afficher dans cette catégorie avec ces filtres.',
+    ticked: (ticked: number, implied: number) =>
+      implied > 0
+        ? `${ticked} ${plural(ticked, 'étape cochée', 'étapes cochées')}, ${implied} ${plural(implied, 'autre déduite', 'autres déduites')}.`
+        : `${ticked} ${plural(ticked, 'étape cochée', 'étapes cochées')}.`,
+    unticked: (n: number) => `${n} ${plural(n, 'étape décochée', 'étapes décochées')}.`,
   },
   data: {
     loading: 'Chargement des données de jeu…',
@@ -74,8 +114,12 @@ export const fr = {
   catalog: {
     title: 'Objectifs',
     tabDofus: 'Dofus',
+    tabs: { goal: 'Dofus', achievement: 'Succès', quest: 'Quêtes' } as Record<string, string>,
+    tabsLabel: 'Type d’objectif',
     search: 'Rechercher un objectif',
-    searchPlaceholder: 'Nom du Dofus',
+    searchPlaceholder: 'Nom, même partiel',
+    typeToSearch: 'Tape au moins deux caractères pour chercher parmi les succès ou les quêtes.',
+    limited: (n: number) => `${n} premiers résultats : précise ta recherche.`,
     level: (level: number | null) => (level === null ? 'Niveau inconnu' : `Niveau ${level}`),
     follow: 'Suivre cet objectif',
     unfollow: 'Ne plus suivre',

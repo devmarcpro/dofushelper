@@ -3,11 +3,13 @@ import type { DatasetError } from '../data/load';
 import { setActiveCharacter } from '../state/actions';
 import { ErrorBoundary } from './ErrorBoundary';
 import { About } from './pages/About';
+import { Bulk } from './pages/Bulk';
 import { Catalog } from './pages/Catalog';
 import { Characters } from './pages/Characters';
 import { Home } from './pages/Home';
 import { NodePage } from './pages/NodePage';
 import { PlanPage } from './pages/PlanPage';
+import { Search } from './pages/Search';
 import { routeHref, type Route } from './router';
 import { fr } from './strings.fr';
 import {
@@ -87,6 +89,8 @@ function Header() {
           label={fr.nav.characters}
           current={current === 'characters'}
         />
+        <NavLink to={{ t: 'search' }} label={fr.nav.search} current={current === 'search'} />
+        <NavLink to={{ t: 'bulk' }} label={fr.nav.bulk} current={current === 'bulk'} />
         <NavLink to={{ t: 'about' }} label={fr.nav.about} current={current === 'about'} />
       </nav>
     </header>
@@ -162,6 +166,10 @@ function Page() {
       return <Catalog />;
     case 'characters':
       return <Characters />;
+    case 'search':
+      return <Search />;
+    case 'bulk':
+      return <Bulk />;
     case 'plan':
       return <PlanPage goal={current.goal} tab={current.tab} />;
     case 'node':
