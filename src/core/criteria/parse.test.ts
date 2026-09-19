@@ -91,6 +91,31 @@ describe('parseCriterionSyntax — atoms', () => {
   });
 });
 
+describe('parseCriterionSyntax — achievement vectors (DATA_NOTES §7)', () => {
+  it.each(fixture.achievementVectors.map((v) => [v.source, v.criterion] as const))(
+    'parses %s',
+    (_source, criterion) => {
+      const result = parseCriterionSyntax(criterion);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(parseOrThrow(printCriterion(result.value))).toEqual(result.value);
+    },
+  );
+
+  it('accepts three arguments and an identifier argument: (EM>147,0,d)', () => {
+    expect(parseOrThrow('(EM>147,0,d)')).toEqual({
+      k: 'atom',
+      key: 'EM',
+      op: '>',
+      args: [147, 0, 'd'],
+      raw: 'EM>147,0,d',
+    });
+  });
+
+  it('prints identifier arguments as written', () => {
+    expect(printCriterion(parseOrThrow('(EM>147,0,d)'))).toBe('EM>147,0,d');
+  });
+});
+
 describe('parseCriterionSyntax — groups', () => {
   it('quest 1329: 28 Qf atoms at the first level and one or-group of 3', () => {
     const vector = vectors.find((v) => v.questId === 1329);
@@ -205,10 +230,23 @@ describe('parseCriterionSyntax — errors (never throws)', () => {
     });
   });
 
-  it('non-numeric argument', () => {
-    expect(errorOf('PL>abc')).toEqual({ pos: 3, expected: 'an integer', found: 'a' });
-    expect(errorOf('PJ>26,x')).toEqual({ pos: 6, expected: 'an integer', found: 'x' });
-    expect(errorOf('PL>-1')).toEqual({ pos: 3, expected: 'an integer', found: '-' });
+  it('invalid argument', () => {
+    expect(errorOf('PL>-1')).toEqual({
+      pos: 3,
+      expected: 'an integer or an identifier',
+      found: '-',
+    });
+    expect(errorOf('PL>')).toEqual({
+      pos: 3,
+      expected: 'an integer or an identifier',
+      found: 'end of input',
+    });
+    expect(errorOf('PJ>26,')).toEqual({
+      pos: 6,
+      expected: 'an integer or an identifier',
+      found: 'end of input',
+    });
+    expect(errorOf('PJ>26,,1')).toMatchObject({ pos: 6, found: ',' });
   });
 
   it('dangling separator', () => {

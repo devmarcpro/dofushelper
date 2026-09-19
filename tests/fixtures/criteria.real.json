@@ -1,5 +1,13 @@
 {
   "_source": "docs/DATA_SOURCES.md §5 — critères de lancement relevés dans un cache DofusDB tiers (février 2026). À revalider contre le snapshot frais (M1-5) : si un critère a changé, le snapshot fait foi.",
+  "achievementVectors": [
+    { "source": "achievement-objective 2 (succès 37)", "criterion": "(EM>147,0,d)" },
+    { "source": "achievement-objective 72 (succès 95)", "criterion": "HD>33001,0" },
+    { "source": "achievement-objective 3387 (succès 1101)", "criterion": "(Qf=1521)" },
+    { "source": "achievement-objective 2762 (succès 922)", "criterion": "(OA=552)" },
+    { "source": "achievement-reward 2 (succès 37)", "criterion": "Ob!37" },
+    { "source": "monster 31 drop coefficient", "criterion": "ST=2" }
+  ],
   "vectors": [
     { "questId": 29, "criterion": "PL>109" },
     { "questId": 18, "criterion": "BT=1" },

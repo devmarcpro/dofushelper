@@ -1,5 +1,11 @@
 import { err, ok, type Result } from '../result';
-import { CRITERION_OPS, type CriterionAst, type CriterionOp, type ParseError } from './ast';
+import {
+  CRITERION_OPS,
+  type CriterionArg,
+  type CriterionAst,
+  type CriterionOp,
+  type ParseError,
+} from './ast';
 
 /*
  * Grammar (DATA_SOURCES.md §4), with the usual precedence ('&' binds tighter than '|'):
@@ -10,7 +16,8 @@ import { CRITERION_OPS, type CriterionAst, type CriterionOp, type ParseError } f
  *   atom  := KEY OP VALUE
  *   KEY   := two letters, case-sensitive
  *   OP    := '=' | '!' | '>' | '<' | 'E'
- *   VALUE := integer | integer ',' integer
+ *   VALUE := arg ( ',' arg )*
+ *   arg   := integer | identifier          (identifier: letters, digits, '_', starting with a letter)
  */
 
 const END_OF_INPUT = 'end of input';
@@ -21,6 +28,10 @@ function isLetter(ch: string): boolean {
 
 function isDigit(ch: string): boolean {
   return ch >= '0' && ch <= '9';
+}
+
+function isIdentifierChar(ch: string): boolean {
+  return isLetter(ch) || isDigit(ch) || ch === '_';
 }
 
 function isOp(ch: string): ch is CriterionOp {
@@ -50,11 +61,17 @@ export function parseCriterionSyntax(raw: string): Result<CriterionAst, ParseErr
   const fail = (expected: string): Result<never, ParseError> =>
     err({ pos, expected, found: found() });
 
-  function parseInteger(): Result<number, ParseError> {
+  function parseArg(): Result<CriterionArg, ParseError> {
     const start = pos;
-    while (pos < raw.length && isDigit(raw[pos] ?? '')) pos += 1;
-    if (pos === start) return fail('an integer');
-    return ok(Number(raw.slice(start, pos)));
+    if (isDigit(raw[pos] ?? '')) {
+      while (pos < raw.length && isDigit(raw[pos] ?? '')) pos += 1;
+      return ok(Number(raw.slice(start, pos)));
+    }
+    if (isLetter(raw[pos] ?? '')) {
+      while (pos < raw.length && isIdentifierChar(raw[pos] ?? '')) pos += 1;
+      return ok(raw.slice(start, pos));
+    }
+    return fail('an integer or an identifier');
   }
 
   function parseAtom(): Result<CriterionAst, ParseError> {
@@ -69,14 +86,14 @@ export function parseCriterionSyntax(raw: string): Result<CriterionAst, ParseErr
     if (!isOp(opChar)) return fail("an operator ('=', '!', '>', '<' or 'E')");
     const op: CriterionOp = opChar;
     pos += 1;
-    const first = parseInteger();
+    const first = parseArg();
     if (!first.ok) return first;
-    const args = [first.value];
-    if (raw[pos] === ',') {
+    const args: CriterionArg[] = [first.value];
+    while (raw[pos] === ',') {
       pos += 1;
-      const second = parseInteger();
-      if (!second.ok) return second;
-      args.push(second.value);
+      const next = parseArg();
+      if (!next.ok) return next;
+      args.push(next.value);
     }
     return ok({ k: 'atom', key, op, args, raw: raw.slice(start, pos) });
   }

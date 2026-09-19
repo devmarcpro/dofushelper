@@ -8,13 +8,16 @@ export type CriterionOp = '=' | '!' | '>' | '<' | 'E';
 
 export const CRITERION_OPS: readonly CriterionOp[] = ['=', '!', '>', '<', 'E'];
 
+/** An argument is an integer, or an identifier such as the 'd' of "EM>147,0,d" (achievement objectives). */
+export type CriterionArg = number | string;
+
 export interface CriterionAtom {
   k: 'atom';
   /** Exactly two letters, case-sensitive (Pj ≠ PJ). */
   key: string;
   op: CriterionOp;
-  /** One or two integers. */
-  args: number[];
+  /** One or more arguments (quest start criteria: one or two integers). */
+  args: CriterionArg[];
   /** The atom as written in the source string. */
   raw: string;
 }
