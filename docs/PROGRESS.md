@@ -4,7 +4,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 
 ## Étape en cours
 
-**Jalon M2 en cours (moteur).** Feuille de route : `docs/prompts/M2.md`, écrite par l'agent sous carte blanche. Étape courante : M2-4 (besoins et conditions) ; M2-1 à M2-3 terminées. CI GitHub verte ; `deploy` attend que Marc active Pages (source « GitHub Actions »). M0 et M1 sont terminés ; premier `git push` fait par l'agent le 2026-09-19 sur délégation de Marc.
+**Jalon M2 en cours (moteur).** Feuille de route : `docs/prompts/M2.md`, écrite par l'agent sous carte blanche. Étape courante : M2-5 (intégration au dataset, test de fumée) ; M2-1 à M2-4 terminées. CI GitHub verte ; `deploy` attend que Marc active Pages (source « GitHub Actions »). M0 et M1 sont terminés ; premier `git push` fait par l'agent le 2026-09-19 sur délégation de Marc.
 
 ## Étapes
 
@@ -20,7 +20,7 @@ Mis à jour à chaque arrêt d'étape. Feuille de route : `docs/prompts/M0_M1.md
 - [x] M2-1 — Étage sémantique du parseur (`toRequirement`) · 2026-09-19 · 20 vecteurs réels avec attendus écrits à la main
 - [x] M2-2 — Graphe et progression effective · 2026-09-19 · 1329 : 28 arêtes obligatoires, 3 alternatives, exclusions sans arête
 - [x] M2-3 — Résolution, points de choix, ordonnancement · 2026-09-19 · 1329 : Bonta → 710, Brâkmar → 711, neutre → 1316 ; ordre stable
-- [ ] M2-4 — Besoins et conditions
+- [x] M2-4 — Besoins et conditions · 2026-09-19 · simulation d'inventaire, tranches de niveau, monstres, donjons, conditions
 - [ ] M2-5 — Intégration au dataset et test de fumée
 - [ ] Revue de fin de jalon M2
 
